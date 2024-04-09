@@ -1,0 +1,2 @@
+PORT: 5432
+DSN: postgres://postgres:postgres@postgres:5432/blog-app
