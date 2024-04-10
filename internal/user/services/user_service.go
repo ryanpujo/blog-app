@@ -12,7 +12,7 @@ type UserService interface {
 	FindById(id uint) (*models.User, error)
 	FindUsers() ([]*models.User, error)
 	DeleteById(id uint) error
-	Update(payload *models.UserPayload) error
+	Update(id uint, payload *models.UserPayload) error
 }
 
 // userService implements UserService with a repository layer.
@@ -52,6 +52,6 @@ func (s *userService) DeleteById(id uint) error {
 }
 
 // Update modifies an existing user record with new data.
-func (s *userService) Update(payload *models.UserPayload) error {
-	return s.repo.Update(payload.ID, payload)
+func (s *userService) Update(id uint, payload *models.UserPayload) error {
+	return s.repo.Update(id, payload)
 }

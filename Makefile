@@ -28,7 +28,7 @@ BROKER_BINARY=brokerApp
 # 	@echo "done"
 
 user_repo_test:
-	@echo "running test for user service"
+	@echo "running test for user repository"
 	cd internal/user/repositories && go test . --coverprofile=cover.out
 	@echo "finished running all test"
 
@@ -38,7 +38,7 @@ user_service_test:
 	@echo "finished running all test"
 
 user_controller_test:
-	@echo "running test for user service"
+	@echo "running test for user controller"
 	cd internal/user/controllers && go test . --coverprofile=cover.out
 	@echo "finished running all test"
 

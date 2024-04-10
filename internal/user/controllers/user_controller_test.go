@@ -1,12 +1,10 @@
 package controllers_test
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"os"
 	"testing"
 
@@ -16,6 +14,7 @@ import (
 	"github.com/ryanpujo/blog-app/internal/route"
 	"github.com/ryanpujo/blog-app/internal/user/controllers"
 	"github.com/ryanpujo/blog-app/models"
+	test "github.com/ryanpujo/blog-app/test/http"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -44,8 +43,8 @@ func (m *MockUserService) DeleteById(id uint) error {
 	return args.Error(0)
 }
 
-func (m *MockUserService) Update(payload *models.UserPayload) error {
-	args := m.Called(payload)
+func (m *MockUserService) Update(id uint, payload *models.UserPayload) error {
+	args := m.Called(id, payload)
 	return args.Error(0)
 }
 
@@ -80,55 +79,260 @@ func Test_userController_Create(t *testing.T) {
 	jsonPayload, _ := json.Marshal(payload)
 	badJson, _ := json.Marshal(badPayload)
 	testTable := map[string]struct {
-		json    []byte
-		arrange func()
-		assert  func(t *testing.T, statusCode int, json response.Response)
+		Json    []byte
+		Arrange func()
+		Assert  func(t *testing.T, statusCode int, json *response.Response)
 	}{
 		"success": {
-			json: jsonPayload,
-			arrange: func() {
+			Json: jsonPayload,
+			Arrange: func() {
 				mockService.On("Create", mock.Anything).Return(uint(1), nil).Once()
 			},
-			assert: func(t *testing.T, statusCode int, json response.Response) {
+			Assert: func(t *testing.T, statusCode int, json *response.Response) {
 				require.Equal(t, http.StatusCreated, statusCode)
 				require.NotNil(t, json)
 				require.Equal(t, float64(1), json.Data.(map[string]any)["id"])
 			},
 		},
 		"failed": {
-			json: jsonPayload,
-			arrange: func() {
+			Json: jsonPayload,
+			Arrange: func() {
 				mockService.On("Create", mock.Anything).Return(uint(0), errors.New("failed")).Once()
 			},
-			assert: func(t *testing.T, statusCode int, json response.Response) {
+			Assert: func(t *testing.T, statusCode int, json *response.Response) {
 				require.Equal(t, http.StatusBadRequest, statusCode)
 				require.Equal(t, "An unexpected error occurred", json.Message)
 			},
 		},
 		"validation error": {
-			json: badJson,
-			arrange: func() {
+			Json: badJson,
+			Arrange: func() {
 				// mockService.On("Create", mock.Anything).Return(uint(0), errors.New("failed")).Once()
 			},
-			assert: func(t *testing.T, statusCode int, json response.Response) {
+			Assert: func(t *testing.T, statusCode int, json *response.Response) {
 				require.Equal(t, http.StatusBadRequest, statusCode)
 				require.Equal(t, "The Email field must be a valid email address", json.Message)
 			},
 		},
 	}
 
-	for name, test := range testTable {
+	for name, testCase := range testTable {
 		t.Run(name, func(t *testing.T) {
-			test.arrange()
+			testCase.Arrange()
+			jsonRes, code := test.NewHttpTest(http.MethodPost, "/create", test.WithBaseUri(baseUri), test.WithJson(testCase.Json)).
+				ExecuteTest(t, mux)
+			testCase.Assert(t, code, jsonRes)
+		})
+	}
+}
 
-			req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/create", baseUri), bytes.NewReader(test.json))
-			require.NoError(t, err)
-			rr := httptest.NewRecorder()
-			mux.ServeHTTP(rr, req)
-			var jsonRes response.Response
-			json.NewDecoder(rr.Body).Decode(&jsonRes)
+func Test_userController_FindById(t *testing.T) {
+	testTable := map[string]struct {
+		ID      uint
+		Arrange func()
+		Assert  func(t *testing.T, statusCode int, json *response.Response)
+	}{
+		"success": {
+			ID: 1,
+			Arrange: func() {
+				mockService.On("FindById", mock.Anything).Return(&models.User{Username: "okeoke"}, nil).Once()
+			},
+			Assert: func(t *testing.T, statusCode int, json *response.Response) {
+				require.Equal(t, http.StatusOK, statusCode)
+				require.NotNil(t, json.Data)
+				require.Equal(t, "okeoke", json.Data.(map[string]any)["user"].(map[string]any)["username"])
+				mockService.AssertCalled(t, "FindById", uint(1))
+			},
+		},
+		"0 id": {
+			ID: 0,
+			Arrange: func() {
+			},
+			Assert: func(t *testing.T, statusCode int, json *response.Response) {
+				require.Equal(t, http.StatusBadRequest, statusCode)
+				require.Nil(t, json.Data)
+				require.Equal(t, "The ID field must be grater than 0", json.Message)
+			},
+		},
+		"failed": {
+			ID: 1,
+			Arrange: func() {
+				mockService.On("FindById", mock.Anything).Return((*models.User)(nil), errors.New("failed")).Once()
+			},
+			Assert: func(t *testing.T, statusCode int, json *response.Response) {
+				require.Equal(t, http.StatusBadRequest, statusCode)
+				require.Nil(t, json.Data)
+				require.Equal(t, "An unexpected error occurred", json.Message)
+			},
+		},
+	}
 
-			test.assert(t, rr.Code, jsonRes)
+	for name, testCase := range testTable {
+		t.Run(name, func(t *testing.T) {
+			testCase.Arrange()
+
+			res, code := test.NewHttpTest(http.MethodGet, fmt.Sprintf("/%d", testCase.ID), test.WithBaseUri(baseUri)).
+				ExecuteTest(t, mux)
+
+			testCase.Assert(t, code, res)
+		})
+	}
+}
+
+func Test_userController_FindUsers(t *testing.T) {
+	testTable := map[string]struct {
+		arrange func()
+		assert  func(t *testing.T, statusCode int, json *response.Response)
+	}{
+		"success": {
+			arrange: func() {
+				mockService.On("FindUsers").Return([]*models.User{{}, {}}, nil).Once()
+			},
+			assert: func(t *testing.T, statusCode int, json *response.Response) {
+				require.Equal(t, http.StatusOK, statusCode)
+				require.NotNil(t, json.Data)
+				require.Equal(t, 2, len(json.Data.(map[string]any)["users"].([]any)))
+			},
+		},
+		"failed": {
+			arrange: func() {
+				mockService.On("FindUsers").Return(([]*models.User)(nil), errors.New("failed")).Once()
+			},
+			assert: func(t *testing.T, statusCode int, json *response.Response) {
+				require.Equal(t, http.StatusBadRequest, statusCode)
+				require.Nil(t, json.Data)
+				require.Equal(t, "An unexpected error occurred", json.Message)
+			},
+		},
+	}
+	for name, testCase := range testTable {
+		t.Run(name, func(t *testing.T) {
+			testCase.arrange()
+
+			res, code := test.NewHttpTest(http.MethodGet, "/", test.WithBaseUri(baseUri)).ExecuteTest(t, mux)
+
+			testCase.assert(t, code, res)
+		})
+	}
+}
+
+func Test_userController_DeleteById(t *testing.T) {
+	testTable := map[string]struct {
+		ID      uint
+		Arrange func()
+		Assert  func(t *testing.T, statusCode int, json *response.Response)
+	}{
+		"success": {
+			ID: 1,
+			Arrange: func() {
+				mockService.On("DeleteById", mock.Anything).Return(nil).Once()
+			},
+			Assert: func(t *testing.T, statusCode int, json *response.Response) {
+				require.Equal(t, http.StatusOK, statusCode)
+				require.Nil(t, json)
+				mockService.AssertCalled(t, "DeleteById", uint(1))
+			},
+		},
+		"0 id": {
+			ID: 0,
+			Arrange: func() {
+			},
+			Assert: func(t *testing.T, statusCode int, json *response.Response) {
+				require.Equal(t, http.StatusBadRequest, statusCode)
+				require.Nil(t, json.Data)
+				require.Equal(t, "The ID field must be grater than 0", json.Message)
+			},
+		},
+		"failed": {
+			ID: 1,
+			Arrange: func() {
+				mockService.On("DeleteById", mock.Anything).Return(errors.New("failed")).Once()
+			},
+			Assert: func(t *testing.T, statusCode int, json *response.Response) {
+				require.Equal(t, http.StatusBadRequest, statusCode)
+				require.Nil(t, json.Data)
+				require.Equal(t, "An unexpected error occurred", json.Message)
+			},
+		},
+	}
+
+	for name, testCase := range testTable {
+		t.Run(name, func(t *testing.T) {
+			testCase.Arrange()
+
+			res, code := test.NewHttpTest(http.MethodDelete, fmt.Sprintf("/%d", testCase.ID), test.WithBaseUri(baseUri)).
+				ExecuteTest(t, mux)
+
+			testCase.Assert(t, code, res)
+		})
+	}
+}
+
+func Test_userController_Update(t *testing.T) {
+	jsonPayload, _ := json.Marshal(payload)
+	badJson, _ := json.Marshal(badPayload)
+	testTable := map[string]struct {
+		ID      uint
+		JSON    []byte
+		arrange func()
+		assert  func(t *testing.T, statusCode int, json *response.Response)
+	}{
+		"success": {
+			ID:   1,
+			JSON: jsonPayload,
+			arrange: func() {
+				mockService.On("Update", mock.Anything, mock.Anything).Return(nil).Once()
+			},
+			assert: func(t *testing.T, statusCode int, json *response.Response) {
+				require.Equal(t, http.StatusOK, statusCode)
+				require.Nil(t, json)
+			},
+		},
+		"failed": {
+			ID:   1,
+			JSON: jsonPayload,
+			arrange: func() {
+				mockService.On("Update", mock.Anything, mock.Anything).Return(errors.New("failed")).Once()
+			},
+			assert: func(t *testing.T, statusCode int, json *response.Response) {
+				require.Equal(t, http.StatusBadRequest, statusCode)
+				require.NotNil(t, json)
+				require.Nil(t, json.Data)
+				require.Equal(t, "An unexpected error occurred", json.Message)
+			},
+		},
+		"bad json": {
+			ID:      1,
+			JSON:    badJson,
+			arrange: func() {},
+			assert: func(t *testing.T, statusCode int, json *response.Response) {
+				require.Equal(t, http.StatusBadRequest, statusCode)
+				require.NotNil(t, json)
+				require.Nil(t, json.Data)
+				require.Equal(t, "The Email field must be a valid email address", json.Message)
+			},
+		},
+		"bad uri": {
+			ID:      0,
+			JSON:    jsonPayload,
+			arrange: func() {},
+			assert: func(t *testing.T, statusCode int, json *response.Response) {
+				require.Equal(t, http.StatusBadRequest, statusCode)
+				require.NotNil(t, json)
+				require.Nil(t, json.Data)
+				require.Equal(t, "The ID field must be grater than 0", json.Message)
+			},
+		},
+	}
+
+	for name, testCase := range testTable {
+		t.Run(name, func(t *testing.T) {
+			testCase.arrange()
+
+			res, code := test.NewHttpTest(http.MethodPatch, fmt.Sprintf("/%d", testCase.ID), test.WithBaseUri(baseUri), test.WithJson(testCase.JSON)).
+				ExecuteTest(t, mux)
+
+			testCase.assert(t, code, res)
 		})
 	}
 }

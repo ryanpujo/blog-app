@@ -3,7 +3,6 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -22,6 +21,8 @@ func GetValidationErrorMessage(vErr validator.ValidationErrors) string {
 		errMessage = fmt.Sprintf("The %s field must be at least %s characters", vErr[0].Field(), vErr[0].Param())
 	case "email":
 		errMessage = fmt.Sprintf("The %s field must be a valid email address", vErr[0].Field())
+	case "gt":
+		errMessage = fmt.Sprintf("The %s field must be grater than %s", vErr[0].Field(), vErr[0].Param())
 	}
 
 	return errMessage
@@ -29,8 +30,6 @@ func GetValidationErrorMessage(vErr validator.ValidationErrors) string {
 
 // HandleRequestError handles errors and sends an appropriate JSON response to the client.
 func HandleRequestError(c *gin.Context, err error) {
-	// Log the detailed error for internal tracking
-	log.Printf("Error: %v", err)
 
 	// Determine the type of error and respond accordingly
 	var validationErrs validator.ValidationErrors

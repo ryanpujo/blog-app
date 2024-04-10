@@ -270,7 +270,7 @@ func Test_userService_Update(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			test.arrange()
 
-			err := userService.Update(&models.UserPayload{})
+			err := userService.Update(1, &models.UserPayload{})
 
 			test.assert(t, err)
 		})
