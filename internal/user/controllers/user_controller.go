@@ -116,24 +116,30 @@ func (uc *userController) DeleteById(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+// Update handles the user update request.
 func (uc *userController) Update(c *gin.Context) {
+	// Define the payload and URI variables to store the incoming data.
 	var payload models.UserPayload
 	var uri models.Uri
 
+	// Bind the JSON body to the payload variable. If there's an error, handle it and return.
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		utils.HandleRequestError(c, err)
 		return
 	}
 
+	// Bind the URI parameters to the uri variable. If there's an error, handle it and return.
 	if err := c.ShouldBindUri(&uri); err != nil {
 		utils.HandleRequestError(c, err)
 		return
 	}
 
+	// Call the update service with the URI ID and payload. If there's an error, handle it and return.
 	if err := uc.s.Update(uri.ID, &payload); err != nil {
 		utils.HandleRequestError(c, err)
 		return
 	}
 
+	// If the update is successful, set the status to OK.
 	c.Status(http.StatusOK)
 }

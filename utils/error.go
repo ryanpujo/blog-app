@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -33,13 +34,15 @@ func HandleRequestError(c *gin.Context, err error) {
 
 	// Determine the type of error and respond accordingly
 	var validationErrs validator.ValidationErrors
-	var DBerr *DBError
+	var DBerr DBError
 	if errors.As(err, &validationErrs) {
 		// Handle validation errors
 		c.AbortWithStatusJSON(http.StatusBadRequest, response.NewErrorResponse(GetValidationErrorMessage(validationErrs)))
 	} else if errors.As(err, &DBerr) {
 		// Handle database errors
 		c.AbortWithStatusJSON(http.StatusBadRequest, response.NewErrorResponse(DBerr.Message))
+	} else if errors.Is(err, sql.ErrNoRows) {
+		c.AbortWithStatusJSON(http.StatusNotFound, response.NewErrorResponse("data not found"))
 	} else {
 		// Handle other types of errors
 		c.AbortWithStatusJSON(http.StatusBadRequest, response.NewErrorResponse("An unexpected error occurred"))

@@ -214,5 +214,13 @@ func Test_userRepo_Update(t *testing.T) {
 
 	err = userRepo.Update(2, &updated)
 	require.Error(t, err)
-	require.Equal(t, "no record found with id 2 to update", err.Error())
+	require.Equal(t, fmt.Errorf("no record found with id %d to update: %w", 2, sql.ErrNoRows), err)
+}
+
+func Test_userRepo_CheckIfUsernameOrEmailExists(t *testing.T) {
+	isExists := userRepo.CheckIfEmailOrUsernameExist(payload.Email, payload.Username)
+	require.True(t, isExists)
+
+	isExists = userRepo.CheckIfEmailOrUsernameExist("desanta@gmail.com", "okeoke")
+	require.False(t, isExists)
 }

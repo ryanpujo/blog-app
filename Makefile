@@ -50,3 +50,5 @@ show_user_service:
 
 show_user_controller:
 	cd internal/user/controllers && go tool cover -html=cover.out
+
+all_test: user_repo_test user_controller_test user_service_test

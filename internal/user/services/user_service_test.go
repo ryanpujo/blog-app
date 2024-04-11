@@ -46,6 +46,10 @@ func (_m *MockUserRepository) Update(id uint, user *models.UserPayload) error {
 	ret := _m.Called(id, user)
 	return ret.Error(0)
 }
+func (_m *MockUserRepository) CheckIfEmailOrUsernameExist(email, username string) bool {
+	ret := _m.Called(email, username)
+	return ret.Bool(0)
+}
 
 // Mock for UserRepository interface
 var mockRepo *MockUserRepository
@@ -73,6 +77,7 @@ func Test_userService_Create(t *testing.T) {
 				// Arrange for a successful creation by setting up the mock expectations
 				mockRepo.On("Create", mock.Anything).Return(uint(1), nil).Once()
 				utils.HashPassword = utils.EncryptPassword
+				mockRepo.On("CheckIfEmailOrUsernameExist", mock.Anything, mock.Anything).Return(false).Once()
 			},
 			assert: func(t *testing.T, actualID uint, err error) {
 				// Assert that no error occurred and the returned ID is as expected
@@ -84,6 +89,7 @@ func Test_userService_Create(t *testing.T) {
 		// Subtest for hashing error during user creation
 		"hashing error": {
 			arrange: func() {
+				mockRepo.On("CheckIfEmailOrUsernameExist", mock.Anything, mock.Anything).Return(false).Once()
 				// Arrange for a hashing error by overriding the HashPassword function
 				utils.HashPassword = func(plain string) (string, error) {
 					return "", errors.New("hash password")
@@ -103,6 +109,7 @@ func Test_userService_Create(t *testing.T) {
 				// Arrange for a failed creation by setting up the mock expectations
 				mockRepo.On("Create", mock.Anything).Return(uint(0), errors.New("failed to create")).Once()
 				utils.HashPassword = utils.EncryptPassword
+				mockRepo.On("CheckIfEmailOrUsernameExist", mock.Anything, mock.Anything).Return(false).Once()
 			},
 			assert: func(t *testing.T, actualID uint, err error) {
 				// Assert that an error occurred and the returned ID is zero
@@ -110,6 +117,16 @@ func Test_userService_Create(t *testing.T) {
 				require.Equal(t, "failed to create", err.Error())
 				require.Zero(t, actualID)
 				mockRepo.AssertCalled(t, "Create", mock.AnythingOfType("models.UserPayload"))
+			},
+		},
+		"email or username exists": {
+			arrange: func() {
+				mockRepo.On("CheckIfEmailOrUsernameExist", mock.Anything, mock.Anything).Return(true).Once()
+			},
+			assert: func(t *testing.T, actualID uint, err error) {
+				require.Zero(t, actualID)
+				require.NotNil(t, err)
+				require.IsType(t, utils.DBError{}, err)
 			},
 		},
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/ryanpujo/blog-app/models"
@@ -22,6 +23,7 @@ type UserRepository interface {
 	FindUsers() ([]*models.User, error)
 	DeleteById(id uint) error
 	Update(id uint, user *models.UserPayload) error
+	CheckIfEmailOrUsernameExist(email, username string) bool
 }
 
 // NewUserRepository creates a new instance of a userRepository.
@@ -126,7 +128,7 @@ func (repo *userRepository) FindUsers() ([]*models.User, error) {
 	}
 	defer rows.Close() // Ensure the rows are closed after the function returns.
 
-	var users []*models.User // Initialize a slice to hold the user records.
+	users := []*models.User{} // Initialize a slice to hold the user records.
 
 	// Iterate over the query results.
 	for rows.Next() {
@@ -169,10 +171,19 @@ func (repo *userRepository) DeleteById(id uint) error {
 	stmt := "DELETE FROM users WHERE id = $1"
 
 	// Execute the delete operation with the provided context and ID.
-	_, err := repo.db.ExecContext(ctx, stmt, id)
+	result, err := repo.db.ExecContext(ctx, stmt, id)
 	if err != nil {
 		// Handle any errors that occur during the delete operation.
 		return utils.HandlePostgresError(err)
+	}
+
+	// Check if the record was actually updated.
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error checking rows affected: %w", err)
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("no record found with id %d to delete: %w", id, sql.ErrNoRows)
 	}
 
 	// Return nil if the delete operation is successful.
@@ -213,9 +224,38 @@ func (repo *userRepository) Update(id uint, user *models.UserPayload) error {
 		return fmt.Errorf("error checking rows affected: %w", err)
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("no record found with id %d to update", id)
+		return fmt.Errorf("no record found with id %d to update: %w", id, sql.ErrNoRows)
 	}
 
 	// Return nil if the update operation is successful.
 	return nil
+}
+
+// CheckIfEmailOrUsernameExist checks if a user with the given email or username exists in the database.
+// It returns true if the user exists, and false otherwise.
+func (repo *userRepository) CheckIfEmailOrUsernameExist(email, username string) bool {
+	// Create a context with a timeout to ensure the query does not run indefinitely.
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel() // Ensure the context is canceled to avoid resource leaks.
+
+	// Prepare the SQL statement to check for the existence of the email or username.
+	stmt := `
+		SELECT EXISTS(
+			SELECT 1 FROM users WHERE email = $1 OR username = $2
+		)
+	`
+
+	// Variable to store the result of the query.
+	var isExists bool
+
+	// Execute the query with the provided email and username, and scan the result into the isExists variable.
+	err := repo.db.QueryRowContext(ctx, stmt, email, username).Scan(&isExists)
+	if err != nil {
+		// Log the error and return false if there's an error executing the query or scanning the result.
+		log.Printf("Error checking if email or username exists: %v", err)
+		return false
+	}
+
+	// Return the result of the query.
+	return isExists
 }
