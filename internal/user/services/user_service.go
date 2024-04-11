@@ -61,7 +61,3 @@ func (s *userService) DeleteById(id uint) error {
 func (s *userService) Update(id uint, payload *models.UserPayload) error {
 	return s.repo.Update(id, payload)
 }
-
-func checkIfEmailExist(email string) {
-
-}

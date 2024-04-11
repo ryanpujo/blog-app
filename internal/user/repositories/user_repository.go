@@ -57,6 +57,7 @@ func (repo *userRepository) Create(payload models.UserPayload) (uint, error) {
 
 	// Handle any errors that occur during the insert operation.
 	if err != nil {
+		log.Println("error disini", err.Error())
 		// Use a utility function to handle common PostgreSQL errors.
 		return 0, utils.HandlePostgresError(err)
 	}
@@ -200,7 +201,7 @@ func (repo *userRepository) Update(id uint, user *models.UserPayload) error {
 	// Prepare the SQL statement for updating the user.
 	stmt := `
 	UPDATE users
-	SET first_name = $1, last_name = $2, username = $3, password = $4, email = $5, updated_at = NOW()
+	SET first_name = $1, last_name = $2, username = $3, password = $4, email = $5
 	WHERE id = $6
 	`
 

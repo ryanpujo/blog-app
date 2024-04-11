@@ -114,7 +114,7 @@ CREATE INDEX idx_images_blog_id ON public.images(blog_id);
 CREATE OR REPLACE FUNCTION update_modified_column()
 RETURNS TRIGGER AS $$
 BEGIN
-   NEW.updated_at = now();
+   NEW.updated_at = CURRENT_TIMESTAMP;
    RETURN NEW;
 END;
 $$ language 'plpgsql';
