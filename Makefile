@@ -27,28 +27,28 @@ BROKER_BINARY=brokerApp
 # 	cd ../broker-service && env GOOS=linux CGO_ENABLED=0 go build -o ${BROKER_BINARY} ./cmd
 # 	@echo "done"
 
-user_repo_test:
+repo_test:
 	@echo "running test for user repository"
-	cd internal/user/repositories && go test . --coverprofile=cover.out
+	cd internal/repositories && go test . --coverprofile=cover.out
 	@echo "finished running all test"
 
 user_service_test:
 	@echo "running test for user service"
-	cd internal/user/services && go test . --coverprofile=cover.out
+	cd internal/services && go test . --coverprofile=cover.out
 	@echo "finished running all test"
 
 user_controller_test:
 	@echo "running test for user controller"
-	cd internal/user/controllers && go test . --coverprofile=cover.out
+	cd internal/controllers && go test . --coverprofile=cover.out
 	@echo "finished running all test"
 
-show_user_repo:
-	cd internal/user/repositories && go tool cover -html=cover.out
+show_repo:
+	cd internal/repositories && go tool cover -html=cover.out
 
 show_user_service:
-	cd internal/user/services && go tool cover -html=cover.out
+	cd internal/services && go tool cover -html=cover.out
 
 show_user_controller:
-	cd internal/user/controllers && go tool cover -html=cover.out
+	cd internal/controllers && go tool cover -html=cover.out
 
-all_test: user_repo_test user_controller_test user_service_test
+all_test: repo_test  user_controller_test user_service_test

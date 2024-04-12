@@ -10,18 +10,6 @@ CREATE TABLE public.users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('John', 'Doe', 'johndoe', 'password123', 'john.doe@example.com');
-INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Jane', 'Smith', 'janesmith', 'password123', 'jane.smith@example.com');
-INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Emily', 'Johnson', 'emilyj', 'password123', 'emily.johnson@example.com');
-INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Michael', 'Brown', 'michaelb', 'password123', 'michael.brown@example.com');
-INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('David', 'Williams', 'davidw', 'password123', 'david.williams@example.com');
-INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Sarah', 'Miller', 'sarahm', 'password123', 'sarah.miller@example.com');
-INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Daniel', 'Davis', 'danield', 'password123', 'daniel.davis@example.com');
-INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Jessica', 'Garcia', 'jessicag', 'password123', 'jessica.garcia@example.com');
-INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('William', 'Martinez', 'williamm', 'password123', 'william.martinez@example.com');
-INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Laura', 'Hernandez', 'laurah', 'password123', 'laura.hernandez@example.com');
-
-
 
 -- Roles table
 CREATE TABLE public.roles (
@@ -68,6 +56,34 @@ CREATE TABLE public.blogs (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+
+-- Insert queries for 'users' table
+INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('John', 'Doe', 'johndoe', 'password123', 'john.doe@example.com');
+INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Jane', 'Smith', 'janesmith', 'password123', 'jane.smith@example.com');
+INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Emily', 'Johnson', 'emilyjohnson', 'password123', 'emily.johnson@example.com');
+INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Michael', 'Brown', 'michaelbrown', 'password123', 'michael.brown@example.com');
+INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('David', 'Jones', 'davidjones', 'password123', 'david.jones@example.com');
+INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Sarah', 'Miller', 'sarahmiller', 'password123', 'sarah.miller@example.com');
+INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('James', 'Wilson', 'jameswilson', 'password123', 'james.wilson@example.com');
+INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Linda', 'Moore', 'lindamoore', 'password123', 'linda.moore@example.com');
+INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Robert', 'Taylor', 'roberttaylor', 'password123', 'robert.taylor@example.com');
+INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Patricia', 'Anderson', 'patriciaanderson', 'password123', 'patricia.anderson@example.com');
+
+-- Insert queries for 'blogs' table with reference to 'users' table
+INSERT INTO public.blogs (title, content, author_id, slug, excerpt, status) VALUES ('First Blog Post', 'Content of the first blog post', 1, 'first-blog-post', 'This is the excerpt of the first blog post', 'published');
+INSERT INTO public.blogs (title, content, author_id, slug, excerpt, status) VALUES ('Second Blog Post', 'Content of the second blog post', 2, 'second-blog-post', 'This is the excerpt of the second blog post', 'published');
+INSERT INTO public.blogs (title, content, author_id, slug, excerpt, status) VALUES ('Third Blog Post', 'Content of the third blog post', 3, 'third-blog-post', 'This is the excerpt of the third blog post', 'draft');
+INSERT INTO public.blogs (title, content, author_id, slug, excerpt, status) VALUES ('Fourth Blog Post', 'Content of the fourth blog post', 4, 'fourth-blog-post', 'This is the excerpt of the fourth blog post', 'draft');
+INSERT INTO public.blogs (title, content, author_id, slug, excerpt, status) VALUES ('Fifth Blog Post', 'Content of the fifth blog post', 5, 'fifth-blog-post', 'This is the excerpt of the fifth blog post', 'review');
+INSERT INTO public.blogs (title, content, author_id, slug, excerpt, status) VALUES ('Sixth Blog Post', 'Content of the sixth blog post', 6, 'sixth-blog-post', 'This is the excerpt of the sixth blog post', 'review');
+INSERT INTO public.blogs (title, content, author_id, slug, excerpt, status) VALUES ('Seventh Blog Post', 'Content of the seventh blog post', 7, 'seventh-blog-post', 'This is the excerpt of the seventh blog post', 'published');
+INSERT INTO public.blogs (title, content, author_id, slug, excerpt, status) VALUES ('Eighth Blog Post', 'Content of the eighth blog post', 8, 'eighth-blog-post', 'This is the excerpt of the eighth blog post', 'draft');
+INSERT INTO public.blogs (title, content, author_id, slug, excerpt, status) VALUES ('Ninth Blog Post', 'Content of the ninth blog post', 9, 'ninth-blog-post', 'This is the excerpt of the ninth blog post', 'review');
+INSERT INTO public.blogs (title, content, author_id, slug, excerpt, status) VALUES ('Tenth Blog Post', 'Content of the tenth blog post', 10, 'tenth-blog-post', 'This is the excerpt of the tenth blog post', 'published');
+
+
+
 
 CREATE TABLE public.categories (
     id SERIAL PRIMARY KEY,
@@ -141,6 +157,12 @@ CREATE INDEX idx_blogs_author_id ON public.blogs(author_id);
 CREATE INDEX idx_images_blog_id ON public.images(blog_id);
 CREATE INDEX idx_blogs_slug ON public.blogs(slug);
 CREATE INDEX idx_blogs_published_at ON public.blogs(published_at);
+
+ALTER TABLE public.blogs
+DROP CONSTRAINT IF EXISTS blogs_author_id_fkey,
+ADD CONSTRAINT blogs_author_id_fkey FOREIGN KEY (author_id)
+REFERENCES public.users (id) ON DELETE CASCADE;
+
 
 -- Triggers for automatic 'updated_at' timestamp
 CREATE OR REPLACE FUNCTION update_modified_column()

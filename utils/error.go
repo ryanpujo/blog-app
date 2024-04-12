@@ -11,6 +11,10 @@ import (
 	"github.com/ryanpujo/blog-app/internal/response"
 )
 
+var (
+	ErrNoDataFound = fmt.Errorf("no record found: %w", sql.ErrNoRows)
+)
+
 // GetValidationErrorMessage generates a user-friendly error message based on the validation errors.
 func GetValidationErrorMessage(vErr validator.ValidationErrors) string {
 	// Default error message

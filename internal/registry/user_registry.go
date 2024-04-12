@@ -1,9 +1,9 @@
 package registry
 
 import (
-	"github.com/ryanpujo/blog-app/internal/user/controllers"
-	"github.com/ryanpujo/blog-app/internal/user/repositories"
-	"github.com/ryanpujo/blog-app/internal/user/services"
+	"github.com/ryanpujo/blog-app/internal/controllers"
+	"github.com/ryanpujo/blog-app/internal/repositories"
+	"github.com/ryanpujo/blog-app/internal/services"
 )
 
 func (r registry) NewUserRepository() repositories.UserRepository {

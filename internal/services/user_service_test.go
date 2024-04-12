@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ryanpujo/blog-app/internal/user/services"
+	"github.com/ryanpujo/blog-app/internal/services"
 	"github.com/ryanpujo/blog-app/models"
 	"github.com/ryanpujo/blog-app/utils"
 	"github.com/stretchr/testify/mock"
@@ -18,9 +18,9 @@ type MockUserRepository struct {
 }
 
 // Create is a mock method that simulates the Create method of the UserRepository interface
-func (_m *MockUserRepository) Create(payload models.UserPayload) (uint, error) {
+func (_m *MockUserRepository) Create(payload models.UserPayload) (*uint, error) {
 	ret := _m.Called(payload)
-	return ret.Get(0).(uint), ret.Error(1)
+	return ret.Get(0).(*uint), ret.Error(1)
 }
 
 // FindById is a mock method that simulates the FindById method of the UserRepository interface
@@ -66,23 +66,24 @@ func TestMain(m *testing.M) {
 
 // Test_userService_Create tests the Create method of userService
 func Test_userService_Create(t *testing.T) {
+	succesRet := uint(1)
 	// Define a test table to run subtests
 	testTable := map[string]struct {
 		arrange func()
-		assert  func(t *testing.T, actualID uint, err error)
+		assert  func(t *testing.T, actualID *uint, err error)
 	}{
 		// Subtest for successful user creation
 		"success": {
 			arrange: func() {
 				// Arrange for a successful creation by setting up the mock expectations
-				mockRepo.On("Create", mock.Anything).Return(uint(1), nil).Once()
+				mockRepo.On("Create", mock.Anything).Return(&succesRet, nil).Once()
 				utils.HashPassword = utils.EncryptPassword
 				mockRepo.On("CheckIfEmailOrUsernameExist", mock.Anything, mock.Anything).Return(false).Once()
 			},
-			assert: func(t *testing.T, actualID uint, err error) {
+			assert: func(t *testing.T, actualID *uint, err error) {
 				// Assert that no error occurred and the returned ID is as expected
 				require.NoError(t, err)
-				require.Equal(t, uint(1), actualID)
+				require.Equal(t, &succesRet, actualID)
 				mockRepo.AssertCalled(t, "Create", mock.AnythingOfType("models.UserPayload"))
 			},
 		},
@@ -95,7 +96,7 @@ func Test_userService_Create(t *testing.T) {
 					return "", errors.New("hash password")
 				}
 			},
-			assert: func(t *testing.T, actualID uint, err error) {
+			assert: func(t *testing.T, actualID *uint, err error) {
 				// Assert that an error occurred and the error message is as expected
 				require.Error(t, err)
 				require.Equal(t, "hash password", err.Error())
@@ -107,11 +108,11 @@ func Test_userService_Create(t *testing.T) {
 		"failed": {
 			arrange: func() {
 				// Arrange for a failed creation by setting up the mock expectations
-				mockRepo.On("Create", mock.Anything).Return(uint(0), errors.New("failed to create")).Once()
+				mockRepo.On("Create", mock.Anything).Return((*uint)(nil), errors.New("failed to create")).Once()
 				utils.HashPassword = utils.EncryptPassword
 				mockRepo.On("CheckIfEmailOrUsernameExist", mock.Anything, mock.Anything).Return(false).Once()
 			},
-			assert: func(t *testing.T, actualID uint, err error) {
+			assert: func(t *testing.T, actualID *uint, err error) {
 				// Assert that an error occurred and the returned ID is zero
 				require.Error(t, err)
 				require.Equal(t, "failed to create", err.Error())
@@ -123,7 +124,7 @@ func Test_userService_Create(t *testing.T) {
 			arrange: func() {
 				mockRepo.On("CheckIfEmailOrUsernameExist", mock.Anything, mock.Anything).Return(true).Once()
 			},
-			assert: func(t *testing.T, actualID uint, err error) {
+			assert: func(t *testing.T, actualID *uint, err error) {
 				require.Zero(t, actualID)
 				require.NotNil(t, err)
 				require.IsType(t, utils.DBError{}, err)

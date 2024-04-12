@@ -2,14 +2,14 @@ package services
 
 import (
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/ryanpujo/blog-app/internal/user/repositories"
+	"github.com/ryanpujo/blog-app/internal/repositories"
 	"github.com/ryanpujo/blog-app/models"
 	"github.com/ryanpujo/blog-app/utils"
 )
 
 // UserService defines the operations available on a user service.
 type UserService interface {
-	Create(payload models.UserPayload) (uint, error)
+	Create(payload models.UserPayload) (*uint, error)
 	FindById(id uint) (*models.User, error)
 	FindUsers() ([]*models.User, error)
 	DeleteById(id uint) error
@@ -27,15 +27,15 @@ func NewUserService(repo repositories.UserRepository) UserService {
 }
 
 // Create hashes the user's password and creates a new user record.
-func (s *userService) Create(payload models.UserPayload) (uint, error) {
+func (s *userService) Create(payload models.UserPayload) (*uint, error) {
 	isExists := s.repo.CheckIfEmailOrUsernameExist(payload.Email, payload.Username)
 	if isExists {
-		return 0, utils.NewDBError(utils.ErrCodeUniqueViolation, "user with a given email or username already exist", &pgconn.PgError{Code: utils.ErrCodeUniqueViolation})
+		return nil, utils.NewDBError(utils.ErrCodeUniqueViolation, "user with a given email or username already exist", &pgconn.PgError{Code: utils.ErrCodeUniqueViolation})
 	}
 
 	hash, err := utils.HashPassword(payload.Password)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	payload.Password = hash
 

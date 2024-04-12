@@ -1,6 +1,6 @@
 package route
 
-import "github.com/ryanpujo/blog-app/internal/user/controllers"
+import "github.com/ryanpujo/blog-app/internal/controllers"
 
 func UserRoute(uc controllers.UserController) {
 	userRoute := mux.Group("/api/user")

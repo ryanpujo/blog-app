@@ -4,36 +4,18 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
 	"testing"
 
 	_ "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/ory/dockertest/v3"
-	"github.com/ory/dockertest/v3/docker"
 
-	"github.com/ryanpujo/blog-app/internal/user/repositories"
 	"github.com/ryanpujo/blog-app/utils"
 
 	"github.com/ryanpujo/blog-app/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-var (
-	host     = "localhost"
-	port     = "5435"
-	user     = "postgres"
-	password = "postgres"
-	dbName   = "users_test"
-	dsn      = "host=%s port=%s user=%s password=%s dbname=%s sslmode=disable timezone=UTC connect_timeout=20"
-)
-
-var resource *dockertest.Resource
-var pool *dockertest.Pool
-var testDb *sql.DB
-var userRepo repositories.UserRepository
 
 var payload = models.UserPayload{
 	FirstName: "michael",
@@ -50,103 +32,24 @@ var payload1 = models.UserPayload{
 	Email:     "townley1@gmail.com",
 }
 
-func TestMain(m *testing.M) {
-	// connect to docker; fail if docker not running
-	p, err := dockertest.NewPool("")
-
-	if err != nil {
-		log.Fatalf("could not connect to docker, is it running? %s", err)
-	}
-
-	pool = p
-
-	// setup docker options, specifying the image and so forth
-	opt := dockertest.RunOptions{
-		Repository: "postgres",
-		Tag:        "16.2-alpine",
-		Env: []string{
-			"POSTGRES_USER=" + user,
-			"POSTGRES_PASSWORD=" + password,
-			"POSTGRES_DB=" + dbName,
-		},
-		ExposedPorts: []string{"5432"},
-		PortBindings: map[docker.Port][]docker.PortBinding{
-			"5432": {
-				{HostIP: "0.0.0.0", HostPort: port},
-			},
-		},
-	}
-
-	// get a resource (docker image)
-	resource, err = pool.RunWithOptions(&opt)
-	if err != nil {
-		log.Fatalf("could not start resource: %s", err)
-	}
-
-	// start the image and wait until its ready
-	if err := pool.Retry(func() error {
-		var err error
-		testDb, err = sql.Open("pgx", fmt.Sprintf(dsn, host, port, user, password, dbName))
-		if err != nil {
-			log.Println("error:", err)
-		}
-		return testDb.Ping()
-	}); err != nil {
-		_ = pool.Purge(resource)
-		log.Fatalf("could not connect to database: %s", err)
-	}
-
-	// populate database with empty table
-	err = createTables()
-	if err != nil {
-		_ = pool.Purge(resource)
-		log.Fatalf("cant create table: %s", err)
-	}
-
-	userRepo = repositories.NewUserRepository(testDb)
-	code := m.Run()
-
-	// clean up
-	if err := pool.Purge(resource); err != nil {
-		log.Fatalf("cant clean resources: %s", err)
-	}
-
-	os.Exit(code)
-}
-
-func createTables() (err error) {
-	var tableSql []byte
-	tableSql, err = os.ReadFile("../../../sql/query.sql")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	_, err = testDb.Exec(string(tableSql))
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	return
-}
-
 func Test_userRepo_pingDB(t *testing.T) {
-	err := testDb.Ping()
+	err := testDB.Ping()
 	require.Nil(t, err)
 }
 
 func Test_userRepo_Create(t *testing.T) {
-
 	id, err := userRepo.Create(payload)
-	require.Equal(t, uint(1), id)
+	log.Println("id sini", *id)
+	require.Equal(t, uint(11), *id)
 	require.Nil(t, err)
 
 	id, err = userRepo.Create(payload1)
 	require.NoError(t, err)
-	require.Equal(t, uint(2), id)
+	require.Equal(t, uint(12), *id)
 
 	id, err = userRepo.Create(payload)
 
-	require.Equal(t, uint(0), id)
+	require.Nil(t, id)
 	require.Error(t, err)
 	var pgErr *pgconn.PgError
 	if assert.ErrorAs(t, err, &pgErr) {
@@ -157,9 +60,9 @@ func Test_userRepo_Create(t *testing.T) {
 func Test_userRepo_FindById(t *testing.T) {
 	user, err := userRepo.FindById(uint(1))
 	require.NoError(t, err)
-	require.Equal(t, payload.FirstName, user.FirstName)
+	require.Equal(t, "John", user.FirstName)
 
-	user, err = userRepo.FindById(uint(3))
+	user, err = userRepo.FindById(uint(13))
 	require.Error(t, err)
 	require.Nil(t, user)
 	if assert.ErrorAs(t, err, &sql.ErrNoRows) {
@@ -170,7 +73,7 @@ func Test_userRepo_FindById(t *testing.T) {
 func Test_userRepo_FindUsers(t *testing.T) {
 	users, err := userRepo.FindUsers()
 	require.NoError(t, err)
-	require.Equal(t, len(users), 2)
+	require.Equal(t, len(users), 12)
 }
 
 func Test_userRepo_DeleteById(t *testing.T) {
@@ -186,17 +89,17 @@ func Test_userRepo_DeleteById(t *testing.T) {
 
 	users, err := userRepo.FindUsers()
 	require.NoError(t, err)
-	require.Equal(t, 1, len(users))
+	require.Equal(t, 11, len(users))
 }
 
 func Test_userRepo_Update(t *testing.T) {
-	user, err := userRepo.FindById(1)
+	user, err := userRepo.FindById(11)
 	require.NoError(t, err)
 	require.NotNil(t, user)
 	require.Equal(t, payload.LastName, user.LastName)
 
 	var updated = models.UserPayload{
-		ID:        1,
+		ID:        11,
 		FirstName: "michael",
 		LastName:  "de santa",
 		Username:  "townley",
@@ -206,7 +109,7 @@ func Test_userRepo_Update(t *testing.T) {
 	err = userRepo.Update(updated.ID, &updated)
 	require.NoError(t, err)
 
-	user, err = userRepo.FindById(1)
+	user, err = userRepo.FindById(11)
 	require.NoError(t, err)
 	require.NotNil(t, user)
 	require.Equal(t, updated.LastName, user.LastName)

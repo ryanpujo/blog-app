@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/ryanpujo/blog-app/internal/response"
-	"github.com/ryanpujo/blog-app/internal/user/services"
+	"github.com/ryanpujo/blog-app/internal/services"
 	"github.com/ryanpujo/blog-app/models"
 	"github.com/ryanpujo/blog-app/utils"
 )

@@ -18,7 +18,7 @@ type userRepository struct {
 
 // UserRepository defines the interface for user repository operations.
 type UserRepository interface {
-	Create(payload models.UserPayload) (uint, error)
+	Create(payload models.UserPayload) (*uint, error)
 	FindById(id uint) (*models.User, error)
 	FindUsers() ([]*models.User, error)
 	DeleteById(id uint) error
@@ -34,7 +34,7 @@ func NewUserRepository(db *sql.DB) *userRepository {
 
 // Create inserts a new user into the database using the provided UserPayload.
 // It returns the ID of the newly created user or an error if the operation fails.
-func (repo *userRepository) Create(payload models.UserPayload) (uint, error) {
+func (repo *userRepository) Create(payload models.UserPayload) (*uint, error) {
 	var id uint
 	// Set a timeout context to avoid long-running database operations.
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
@@ -57,13 +57,12 @@ func (repo *userRepository) Create(payload models.UserPayload) (uint, error) {
 
 	// Handle any errors that occur during the insert operation.
 	if err != nil {
-		log.Println("error disini", err.Error())
 		// Use a utility function to handle common PostgreSQL errors.
-		return 0, utils.HandlePostgresError(err)
+		return nil, utils.HandlePostgresError(err)
 	}
 
 	// Return the ID of the newly created user.
-	return id, nil
+	return &id, nil
 }
 
 // FindById retrieves a user by their ID from the database.

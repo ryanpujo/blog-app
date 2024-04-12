@@ -10,9 +10,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/ryanpujo/blog-app/internal/adapter"
+	"github.com/ryanpujo/blog-app/internal/controllers"
 	"github.com/ryanpujo/blog-app/internal/response"
 	"github.com/ryanpujo/blog-app/internal/route"
-	"github.com/ryanpujo/blog-app/internal/user/controllers"
 	"github.com/ryanpujo/blog-app/models"
 	test "github.com/ryanpujo/blog-app/test/http"
 	"github.com/stretchr/testify/mock"
@@ -23,9 +23,9 @@ type MockUserService struct {
 	mock.Mock
 }
 
-func (m *MockUserService) Create(payload models.UserPayload) (uint, error) {
+func (m *MockUserService) Create(payload models.UserPayload) (*uint, error) {
 	args := m.Called(payload)
-	return args.Get(0).(uint), args.Error(1)
+	return args.Get(0).(*uint), args.Error(1)
 }
 
 func (m *MockUserService) FindById(id uint) (*models.User, error) {
@@ -78,6 +78,7 @@ func TestMain(m *testing.M) {
 func Test_userController_Create(t *testing.T) {
 	jsonPayload, _ := json.Marshal(payload)
 	badJson, _ := json.Marshal(badPayload)
+	successRet := uint(1)
 	testTable := map[string]struct {
 		Json    []byte
 		Arrange func()
@@ -86,7 +87,7 @@ func Test_userController_Create(t *testing.T) {
 		"success": {
 			Json: jsonPayload,
 			Arrange: func() {
-				mockService.On("Create", mock.Anything).Return(uint(1), nil).Once()
+				mockService.On("Create", mock.Anything).Return(&successRet, nil).Once()
 			},
 			Assert: func(t *testing.T, statusCode int, json *response.Response) {
 				require.Equal(t, http.StatusCreated, statusCode)
@@ -97,7 +98,7 @@ func Test_userController_Create(t *testing.T) {
 		"failed": {
 			Json: jsonPayload,
 			Arrange: func() {
-				mockService.On("Create", mock.Anything).Return(uint(0), errors.New("failed")).Once()
+				mockService.On("Create", mock.Anything).Return((*uint)(nil), errors.New("failed")).Once()
 			},
 			Assert: func(t *testing.T, statusCode int, json *response.Response) {
 				require.Equal(t, http.StatusBadRequest, statusCode)
