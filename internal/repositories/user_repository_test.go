@@ -20,13 +20,6 @@ var payload = models.UserPayload{
 	Password:  "fucktrevor",
 	Email:     "townley@gmail.com",
 }
-var payload1 = models.UserPayload{
-	FirstName: "michael",
-	LastName:  "townley",
-	Username:  "townley1",
-	Password:  "fucktrevor",
-	Email:     "townley1@gmail.com",
-}
 
 func Test_userRepo_pingDB(t *testing.T) {
 	err := testDB.Ping()
