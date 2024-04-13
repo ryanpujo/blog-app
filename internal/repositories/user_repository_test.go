@@ -1,19 +1,15 @@
 package repositories_test
 
 import (
-	"database/sql"
-	"fmt"
-	"log"
 	"testing"
+	"time"
 
+	"github.com/DATA-DOG/go-sqlmock"
 	_ "github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 	_ "github.com/jackc/pgx/v5/stdlib"
 
-	"github.com/ryanpujo/blog-app/utils"
-
 	"github.com/ryanpujo/blog-app/models"
-	"github.com/stretchr/testify/assert"
+	"github.com/ryanpujo/blog-app/utils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -38,91 +34,325 @@ func Test_userRepo_pingDB(t *testing.T) {
 }
 
 func Test_userRepo_Create(t *testing.T) {
-	id, err := userRepo.Create(payload)
-	log.Println("id sini", *id)
-	require.Equal(t, uint(11), *id)
-	require.Nil(t, err)
+	testTable := map[string]struct {
+		arrange func()
+		assert  func(t *testing.T, actualID *uint, err error)
+	}{
+		"success": {
+			arrange: func() {
+				rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
+				mock.ExpectQuery("INSERT INTO users").
+					WithArgs(payload.FirstName, payload.LastName, payload.Username, payload.Password, payload.Email).
+					WillReturnRows(rows)
+			},
+			assert: func(t *testing.T, actualID *uint, err error) {
+				require.NoError(t, err)
+				require.Equal(t, uint(1), *actualID)
+			},
+		},
+		"failed": {
+			arrange: func() {
+				rows := sqlmock.NewRows([]string{"id"})
+				mock.ExpectQuery("INSERT INTO users").
+					WithArgs(payload.FirstName, payload.LastName, payload.Username, payload.Password, payload.Email).
+					WillReturnRows(rows)
+			},
+			assert: func(t *testing.T, actualID *uint, err error) {
+				require.Error(t, err)
+				require.Nil(t, actualID)
+			},
+		},
+	}
 
-	id, err = userRepo.Create(payload1)
-	require.NoError(t, err)
-	require.Equal(t, uint(12), *id)
+	for name, tc := range testTable {
+		t.Run(name, func(t *testing.T) {
+			tc.arrange()
 
-	id, err = userRepo.Create(payload)
+			user, err := userRepo.Create(payload)
 
-	require.Nil(t, id)
-	require.Error(t, err)
-	var pgErr *pgconn.PgError
-	if assert.ErrorAs(t, err, &pgErr) {
-		require.Equal(t, utils.ErrCodeUniqueViolation, pgErr.Code)
+			tc.assert(t, user, err)
+		})
 	}
 }
 
 func Test_userRepo_FindById(t *testing.T) {
-	user, err := userRepo.FindById(uint(1))
-	require.NoError(t, err)
-	require.Equal(t, "John", user.FirstName)
+	testTable := map[string]struct {
+		arrange func()
+		assert  func(t *testing.T, actualUser *models.User, err error)
+	}{
+		"success": {
+			arrange: func() {
+				rows := sqlmock.NewRows([]string{"id", "first_name", "last_name", "username", "password", "email", "created_at", "updated_at"}).
+					AddRow(payload.ID, payload.FirstName, payload.LastName, payload.Username, payload.Password, payload.Email, time.Now(), time.Now())
 
-	user, err = userRepo.FindById(uint(13))
-	require.Error(t, err)
-	require.Nil(t, user)
-	if assert.ErrorAs(t, err, &sql.ErrNoRows) {
-		require.ErrorIs(t, err, sql.ErrNoRows)
+				mock.ExpectQuery("SELECT (.+) FROM users").WithArgs(1).WillReturnRows(rows)
+			},
+			assert: func(t *testing.T, actualUser *models.User, err error) {
+				require.NoError(t, err)
+				require.Equal(t, payload.Username, actualUser.Username)
+			},
+		},
+		"failed": {
+			arrange: func() {
+				rows := sqlmock.NewRows([]string{"id", "first_name", "last_name", "username", "password", "email", "created_at", "updated_at"})
+
+				mock.ExpectQuery("SELECT (.+) FROM users").WithArgs(1).WillReturnRows(rows)
+			},
+			assert: func(t *testing.T, actualUser *models.User, err error) {
+				require.Error(t, err)
+				require.Equal(t, utils.ErrNoDataFound, err)
+			},
+		},
+	}
+
+	for name, tc := range testTable {
+		t.Run(name, func(t *testing.T) {
+			tc.arrange()
+
+			user, err := userRepo.FindById(1)
+
+			tc.assert(t, user, err)
+		})
 	}
 }
 
 func Test_userRepo_FindUsers(t *testing.T) {
-	users, err := userRepo.FindUsers()
-	require.NoError(t, err)
-	require.Equal(t, len(users), 12)
+	testTable := map[string]struct {
+		arrange func()
+		assert  func(t *testing.T, actualUsers []*models.User, err error)
+	}{
+		"success": {
+			arrange: func() {
+				rows := sqlmock.NewRows([]string{"id", "first_name", "last_name", "username", "password", "email", "created_at", "updated_at"})
+				for range 2 {
+					rows.AddRow(payload.ID, payload.FirstName, payload.LastName, payload.Username, payload.Password, payload.Email, time.Now(), time.Now())
+				}
+
+				mock.ExpectQuery("SELECT (.+) FROM users").WillReturnRows(rows)
+			},
+			assert: func(t *testing.T, actualUsers []*models.User, err error) {
+				require.NoError(t, err)
+				require.Equal(t, 2, len(actualUsers))
+			},
+		},
+		"failed": {
+			arrange: func() {
+				sqlmock.NewRows([]string{"id", "first_name", "last_name", "username", "password", "email", "created_at", "updated_at"})
+
+				mock.ExpectQuery("SELECT (.+) FROM users").WillReturnError(utils.ErrNoDataFound)
+			},
+			assert: func(t *testing.T, actualUsers []*models.User, err error) {
+				require.Error(t, err)
+				require.Equal(t, utils.ErrNoDataFound, err)
+				require.Nil(t, actualUsers)
+			},
+		},
+		"scan error": {
+			arrange: func() {
+				rows := sqlmock.NewRows([]string{"id", "first_name", "last_name", "username", "password", "email", "created_at", "updated_at"})
+				for range 2 {
+					rows.AddRow(payload.ID, payload.FirstName, payload.LastName, payload.Username, payload.Password, payload.Email, 1, time.Now())
+				}
+
+				mock.ExpectQuery("SELECT (.+) FROM users").WillReturnRows(rows)
+			},
+			assert: func(t *testing.T, actualUsers []*models.User, err error) {
+				require.Error(t, err)
+				require.Nil(t, actualUsers)
+			},
+		},
+		"row error": {
+			arrange: func() {
+				rows := sqlmock.NewRows([]string{"id", "first_name", "last_name", "username", "password", "email", "created_at", "updated_at"}).
+					AddRow(payload.ID, payload.FirstName, payload.LastName, payload.Username, payload.Password, payload.Email, 1, time.Now()).
+					RowError(0, utils.ErrNoDataFound)
+
+				mock.ExpectQuery("SELECT (.+) FROM users").WillReturnRows(rows)
+			},
+			assert: func(t *testing.T, actualUsers []*models.User, err error) {
+				require.Error(t, err)
+				require.Nil(t, actualUsers)
+			},
+		},
+	}
+
+	for name, tc := range testTable {
+		t.Run(name, func(t *testing.T) {
+			tc.arrange()
+
+			users, err := userRepo.FindUsers()
+
+			tc.assert(t, users, err)
+		})
+	}
 }
 
 func Test_userRepo_DeleteById(t *testing.T) {
-	err := userRepo.DeleteById(2)
-	require.NoError(t, err)
+	testTable := map[string]struct {
+		arrange func()
+		assert  func(t *testing.T, err error)
+	}{
+		"success": {
+			arrange: func() {
+				sqlmock.NewRows([]string{"id"}).AddRow(1)
 
-	user, err := userRepo.FindById(2)
-	require.Error(t, err)
-	if assert.ErrorAs(t, err, &sql.ErrNoRows) {
-		require.ErrorIs(t, err, sql.ErrNoRows)
+				mock.ExpectExec("DELETE FROM users").WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 1))
+			},
+			assert: func(t *testing.T, err error) {
+				require.NoError(t, err)
+			},
+		},
+		"failed": {
+			arrange: func() {
+				sqlmock.NewRows([]string{"id"}).AddRow(1)
+
+				mock.ExpectExec("DELETE FROM users").WithArgs(1).WillReturnError(utils.ErrNoDataFound)
+			},
+			assert: func(t *testing.T, err error) {
+				require.Error(t, err)
+				require.Equal(t, utils.ErrNoDataFound, err)
+			},
+		},
+		"no record found": {
+			arrange: func() {
+				sqlmock.NewRows([]string{"id"}).AddRow(1)
+
+				mock.ExpectExec("DELETE FROM users").WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 0))
+			},
+			assert: func(t *testing.T, err error) {
+				require.Error(t, err)
+				require.Equal(t, utils.ErrNoDataFound, err)
+			},
+		},
+		"result error": {
+			arrange: func() {
+				sqlmock.NewRows([]string{"id"}).AddRow(1)
+
+				mock.ExpectExec("DELETE FROM users").WithArgs(1).WillReturnResult(sqlmock.NewErrorResult(utils.ErrNoDataFound))
+			},
+			assert: func(t *testing.T, err error) {
+				require.Error(t, err)
+				require.Equal(t, utils.ErrNoDataFound, err)
+			},
+		},
 	}
-	require.Nil(t, user)
 
-	users, err := userRepo.FindUsers()
-	require.NoError(t, err)
-	require.Equal(t, 11, len(users))
+	for name, tc := range testTable {
+		t.Run(name, func(t *testing.T) {
+			tc.arrange()
+
+			err := userRepo.DeleteById(1)
+
+			tc.assert(t, err)
+		})
+	}
 }
 
 func Test_userRepo_Update(t *testing.T) {
-	user, err := userRepo.FindById(11)
-	require.NoError(t, err)
-	require.NotNil(t, user)
-	require.Equal(t, payload.LastName, user.LastName)
+	testTable := map[string]struct {
+		arrange func()
+		assert  func(t *testing.T, err error)
+	}{
+		"success": {
+			arrange: func() {
+				sqlmock.NewRows([]string{"id", "first_name", "last_name", "username", "password", "email", "created_at", "updated_at"})
 
-	var updated = models.UserPayload{
-		ID:        11,
-		FirstName: "michael",
-		LastName:  "de santa",
-		Username:  "townley",
-		Password:  "fucktrevor",
-		Email:     "townley@gmail.com",
+				mock.ExpectExec("UPDATE users SET").WithArgs(
+					payload.FirstName, payload.LastName, payload.Username, payload.Password, payload.Email, 1,
+				).WillReturnResult(sqlmock.NewResult(0, 1))
+			},
+			assert: func(t *testing.T, err error) {
+				require.NoError(t, err)
+			},
+		},
+		"failed": {
+			arrange: func() {
+				sqlmock.NewRows([]string{"id", "first_name", "last_name", "username", "password", "email", "created_at", "updated_at"})
+
+				mock.ExpectExec("UPDATE users SET").WithArgs(
+					payload.FirstName, payload.LastName, payload.Username, payload.Password, payload.Email, 1,
+				).WillReturnError(utils.ErrNoDataFound)
+			},
+			assert: func(t *testing.T, err error) {
+				require.Error(t, err)
+				require.Equal(t, utils.ErrNoDataFound, err)
+			},
+		},
+		"no record found": {
+			arrange: func() {
+				sqlmock.NewRows([]string{"id", "first_name", "last_name", "username", "password", "email", "created_at", "updated_at"})
+
+				mock.ExpectExec("UPDATE users SET").WithArgs(
+					payload.FirstName, payload.LastName, payload.Username, payload.Password, payload.Email, 1,
+				).WillReturnResult(sqlmock.NewResult(0, 0))
+			},
+			assert: func(t *testing.T, err error) {
+				require.Error(t, err)
+				require.Equal(t, utils.ErrNoDataFound, err)
+			},
+		},
+		"result error": {
+			arrange: func() {
+				sqlmock.NewRows([]string{"id", "first_name", "last_name", "username", "password", "email", "created_at", "updated_at"})
+
+				mock.ExpectExec("UPDATE users SET").WithArgs(
+					payload.FirstName, payload.LastName, payload.Username, payload.Password, payload.Email, 1,
+				).WillReturnResult(sqlmock.NewErrorResult(utils.ErrNoDataFound))
+			},
+			assert: func(t *testing.T, err error) {
+				require.Error(t, err)
+				require.Equal(t, utils.ErrNoDataFound, err)
+			},
+		},
 	}
-	err = userRepo.Update(updated.ID, &updated)
-	require.NoError(t, err)
 
-	user, err = userRepo.FindById(11)
-	require.NoError(t, err)
-	require.NotNil(t, user)
-	require.Equal(t, updated.LastName, user.LastName)
+	for name, tc := range testTable {
+		t.Run(name, func(t *testing.T) {
+			tc.arrange()
 
-	err = userRepo.Update(2, &updated)
-	require.Error(t, err)
-	require.Equal(t, fmt.Errorf("no record found with id %d to update: %w", 2, sql.ErrNoRows), err)
+			err := userRepo.Update(1, &payload)
+
+			tc.assert(t, err)
+		})
+	}
 }
 
 func Test_userRepo_CheckIfUsernameOrEmailExists(t *testing.T) {
-	isExists := userRepo.CheckIfEmailOrUsernameExist(payload.Email, payload.Username)
-	require.True(t, isExists)
+	testTable := map[string]struct {
+		arrange func()
+		assert  func(t *testing.T, isExists bool)
+	}{
+		"should be true": {
+			arrange: func() {
+				rows := sqlmock.NewRows([]string{"exists"}).AddRow(true)
 
-	isExists = userRepo.CheckIfEmailOrUsernameExist("desanta@gmail.com", "okeoke")
-	require.False(t, isExists)
+				mock.ExpectQuery("SELECT EXISTS").WithArgs("johndoe", "john").
+					WillReturnRows(rows)
+			},
+			assert: func(t *testing.T, isExists bool) {
+				require.True(t, isExists)
+			},
+		},
+		"should be false": {
+			arrange: func() {
+				rows := sqlmock.NewRows([]string{"exists"}).AddRow(time.Now())
+
+				mock.ExpectQuery("SELECT EXISTS").WithArgs("johndoe", "john").
+					WillReturnRows(rows)
+			},
+			assert: func(t *testing.T, isExists bool) {
+				require.False(t, isExists)
+			},
+		},
+	}
+
+	for name, tc := range testTable {
+		t.Run(name, func(t *testing.T) {
+			tc.arrange()
+
+			isExists := userRepo.CheckIfEmailOrUsernameExist("johndoe", "john")
+
+			tc.assert(t, isExists)
+		})
+	}
 }

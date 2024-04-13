@@ -3,7 +3,6 @@ package repositories
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
 	"time"
 
@@ -180,10 +179,10 @@ func (repo *userRepository) DeleteById(id uint) error {
 	// Check if the record was actually updated.
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("error checking rows affected: %w", err)
+		return utils.HandlePostgresError(err)
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("no record found with id %d to delete: %w", id, sql.ErrNoRows)
+		return utils.ErrNoDataFound
 	}
 
 	// Return nil if the delete operation is successful.
@@ -221,10 +220,10 @@ func (repo *userRepository) Update(id uint, user *models.UserPayload) error {
 	// Check if the record was actually updated.
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("error checking rows affected: %w", err)
+		return utils.HandlePostgresError(err)
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("no record found with id %d to update: %w", id, sql.ErrNoRows)
+		return utils.ErrNoDataFound
 	}
 
 	// Return nil if the update operation is successful.

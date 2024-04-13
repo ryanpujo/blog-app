@@ -3,7 +3,6 @@ package repositories
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/ryanpujo/blog-app/models"
@@ -195,7 +194,7 @@ func (repo *blogRepository) DeleteById(id uint) error {
 
 	// If no rows were affected, return an error indicating that no record was found.
 	if rowsAffected == 0 {
-		return fmt.Errorf("no record found with id %d to delete: %w", id, sql.ErrNoRows)
+		return utils.ErrNoDataFound
 	}
 
 	// Return nil if the deletion was successful.

@@ -87,7 +87,7 @@ func HandlePostgresError(err error) error {
 			return NewDBError(pgErr.Code, "database error", err)
 		}
 	} else if errors.Is(err, sql.ErrNoRows) {
-		return fmt.Errorf("data not found: %w", err)
+		return ErrNoDataFound
 	}
 
 	// If the error is not a PgError, return the original error.
