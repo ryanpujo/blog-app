@@ -9,7 +9,7 @@ import (
 	"github.com/ryanpujo/blog-app/utils"
 )
 
-type BlogReposiory interface {
+type BlogRepository interface {
 	Create(blog models.BlogPayload) (*uint, error)
 	FindById(id uint) (*models.Blog, error)
 	FindBlogs() ([]*models.Blog, error)

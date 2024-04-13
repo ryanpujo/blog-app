@@ -158,7 +158,7 @@ func Test_DeleteById(t *testing.T) {
 			},
 		},
 		"failed": {
-			ID: 8,
+			ID: 30,
 			Assert: func(t *testing.T, statusCode int, json *response.Response) {
 				require.Equal(t, http.StatusNotFound, statusCode)
 				require.Nil(t, json.Data)

@@ -22,7 +22,7 @@ type userService struct {
 }
 
 // NewUserService creates a new instance of userService with the given repository.
-func NewUserService(repo repositories.UserRepository) UserService {
+func NewUserService(repo repositories.UserRepository) *userService {
 	return &userService{repo: repo}
 }
 

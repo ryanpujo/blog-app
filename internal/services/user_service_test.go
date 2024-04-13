@@ -2,10 +2,8 @@ package services_test
 
 import (
 	"errors"
-	"os"
 	"testing"
 
-	"github.com/ryanpujo/blog-app/internal/services"
 	"github.com/ryanpujo/blog-app/models"
 	"github.com/ryanpujo/blog-app/utils"
 	"github.com/stretchr/testify/mock"
@@ -49,19 +47,6 @@ func (_m *MockUserRepository) Update(id uint, user *models.UserPayload) error {
 func (_m *MockUserRepository) CheckIfEmailOrUsernameExist(email, username string) bool {
 	ret := _m.Called(email, username)
 	return ret.Bool(0)
-}
-
-// Mock for UserRepository interface
-var mockRepo *MockUserRepository
-
-// UserService instance with injected mock
-var userService services.UserService
-
-// TestMain sets up the mock repository and userService before running the tests
-func TestMain(m *testing.M) {
-	mockRepo = new(MockUserRepository)
-	userService = services.NewUserService(mockRepo)
-	os.Exit(m.Run())
 }
 
 // Test_userService_Create tests the Create method of userService

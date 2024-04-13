@@ -59,4 +59,4 @@ show_user_controller:
 show_integration:
 	cd test/integration && go tool cover -html=cover.out
 
-all_test: repo_test  user_controller_test user_service_test
+all_test: repo_test  user_controller_test user_service_test integration_test
