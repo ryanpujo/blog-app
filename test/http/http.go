@@ -8,10 +8,8 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
-	"testing"
 
 	"github.com/ryanpujo/blog-app/internal/response"
-	"github.com/stretchr/testify/require"
 )
 
 // HttpTest encapsulates the data needed to create an HTTP test case.
@@ -55,7 +53,7 @@ func NewHttpTest(httpMethod, uri string, opts ...httpTestOption) *HttpTest {
 }
 
 // ExecuteTest performs the HTTP test and returns the response and status code.
-func (ht *HttpTest) ExecuteTest(t *testing.T, mux http.Handler) (*response.Response, int) {
+func (ht *HttpTest) ExecuteTest(mux http.Handler) (*response.Response, int, error) {
 	var body io.Reader
 
 	// If a JSON body is provided, create a reader for it.
@@ -69,7 +67,9 @@ func (ht *HttpTest) ExecuteTest(t *testing.T, mux http.Handler) (*response.Respo
 
 	// Create a new HTTP request with the provided method, URI, and body.
 	req, err := http.NewRequest(ht.HttpMethod, fullURI, body)
-	require.NoError(t, err)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
 
 	// Record the HTTP response using httptest.
 	recorder := httptest.NewRecorder()
@@ -80,5 +80,5 @@ func (ht *HttpTest) ExecuteTest(t *testing.T, mux http.Handler) (*response.Respo
 	json.NewDecoder(recorder.Body).Decode(&jsonRes)
 	// require.NoError(t, err)
 
-	return jsonRes, recorder.Code
+	return jsonRes, recorder.Code, nil
 }
