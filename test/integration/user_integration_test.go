@@ -65,8 +65,9 @@ func Test_Create(t *testing.T) {
 
 	for name, testCase := range testTable {
 		t.Run(name, func(t *testing.T) {
-			jsonRes, code := test.NewHttpTest(http.MethodPost, "/create", test.WithBaseUri(userBaseUri), test.WithJson(testCase.Json)).
-				ExecuteTest(t, mux)
+			jsonRes, code, err := test.NewHttpTest(http.MethodPost, "/create", test.WithBaseUri(userBaseUri), test.WithJson(testCase.Json)).
+				ExecuteTest(mux)
+			require.NoError(t, err)
 			testCase.Assert(t, code, jsonRes)
 		})
 	}
@@ -106,9 +107,9 @@ func Test_FindById(t *testing.T) {
 
 	for name, testCase := range testTable {
 		t.Run(name, func(t *testing.T) {
-			res, code := test.NewHttpTest(http.MethodGet, fmt.Sprintf("/%d", testCase.ID), test.WithBaseUri(userBaseUri)).
-				ExecuteTest(t, mux)
-
+			res, code, err := test.NewHttpTest(http.MethodGet, fmt.Sprintf("/%d", testCase.ID), test.WithBaseUri(userBaseUri)).
+				ExecuteTest(mux)
+			require.NoError(t, err)
 			testCase.Assert(t, code, res)
 		})
 	}
@@ -129,8 +130,8 @@ func Test_FindUsers(t *testing.T) {
 	}
 	for name, testCase := range testTable {
 		t.Run(name, func(t *testing.T) {
-			res, code := test.NewHttpTest(http.MethodGet, "/", test.WithBaseUri(userBaseUri)).ExecuteTest(t, mux)
-
+			res, code, err := test.NewHttpTest(http.MethodGet, "/", test.WithBaseUri(userBaseUri)).ExecuteTest(mux)
+			require.NoError(t, err)
 			testCase.assert(t, code, res)
 		})
 	}
@@ -168,9 +169,9 @@ func Test_DeleteById(t *testing.T) {
 	}
 
 	for _, testCase := range testTable {
-		res, code := test.NewHttpTest(http.MethodDelete, fmt.Sprintf("/%d", testCase.ID), test.WithBaseUri(userBaseUri)).
-			ExecuteTest(t, mux)
-
+		res, code, err := test.NewHttpTest(http.MethodDelete, fmt.Sprintf("/%d", testCase.ID), test.WithBaseUri(userBaseUri)).
+			ExecuteTest(mux)
+		require.NoError(t, err)
 		testCase.Assert(t, code, res)
 	}
 }
@@ -234,9 +235,9 @@ func Test_Update(t *testing.T) {
 
 	for name, testCase := range testTable {
 		t.Run(name, func(t *testing.T) {
-			res, code := test.NewHttpTest(http.MethodPatch, fmt.Sprintf("/%d", testCase.ID), test.WithBaseUri(userBaseUri), test.WithJson(testCase.JSON)).
-				ExecuteTest(t, mux)
-
+			res, code, err := test.NewHttpTest(http.MethodPatch, fmt.Sprintf("/%d", testCase.ID), test.WithBaseUri(userBaseUri), test.WithJson(testCase.JSON)).
+				ExecuteTest(mux)
+			require.NoError(t, err)
 			testCase.assert(t, code, res)
 		})
 	}
