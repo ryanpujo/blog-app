@@ -5,14 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"testing"
 
-	"github.com/gin-gonic/gin"
-	"github.com/ryanpujo/blog-app/internal/adapter"
-	"github.com/ryanpujo/blog-app/internal/controllers"
 	"github.com/ryanpujo/blog-app/internal/response"
-	"github.com/ryanpujo/blog-app/internal/route"
 	"github.com/ryanpujo/blog-app/models"
 	test "github.com/ryanpujo/blog-app/test/http"
 	"github.com/stretchr/testify/mock"
@@ -49,10 +44,8 @@ func (m *MockUserService) Update(id uint, payload *models.UserPayload) error {
 }
 
 var (
-	mockService *MockUserService
-	mux         *gin.Engine
-	baseUri     = "/api/user"
-	payload     = models.UserPayload{
+	baseUri = "/api/user"
+	payload = models.UserPayload{
 		FirstName: "michael",
 		LastName:  "townley",
 		Username:  "desanta",
@@ -67,13 +60,6 @@ var (
 		Email:     "townleygmail.com",
 	}
 )
-
-func TestMain(m *testing.M) {
-	mockService = new(MockUserService)
-	userController := controllers.NewUserController(mockService)
-	mux = route.Route(adapter.AppController{UserController: userController})
-	os.Exit(m.Run())
-}
 
 func Test_userController_Create(t *testing.T) {
 	jsonPayload, _ := json.Marshal(payload)
