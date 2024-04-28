@@ -72,7 +72,7 @@ type Story struct {
 // IsValidWordCountForStoryType checks if the word count of a story falls within the typical range for its type.
 // It takes two parameters: storyType and wordCount. storyType is the type of the story and wordCount is the number of words in the story.
 // It returns nil if the word count is within the typical range for the given story type, and a StoryError otherwise.
-func IsValidWordCountForStoryType(storyType StoryType, wordCount int) error {
+func IsValidWordCountForStoryType(storyType StoryType, wordCount uint) error {
 	switch storyType {
 	case FlashFiction:
 		if wordCount <= 100 || wordCount > 1000 {
@@ -99,7 +99,7 @@ func IsValidWordCountForStoryType(storyType StoryType, wordCount int) error {
 // StoryError represents an error that occurs during story operations.
 type StoryError struct {
 	StoryType StoryType
-	WordCount int
+	WordCount uint
 	Message   string
 }
 

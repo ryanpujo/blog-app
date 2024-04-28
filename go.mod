@@ -24,6 +24,7 @@ require (
 	github.com/chenzhuoyu/iasm v0.9.1 // indirect
 	github.com/containerd/continuity v0.4.3 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
+	github.com/derektata/lorem v0.0.2 // indirect
 	github.com/docker/cli v26.0.0+incompatible // indirect
 	github.com/docker/docker v26.0.0+incompatible // indirect
 	github.com/docker/go-connections v0.5.0 // indirect

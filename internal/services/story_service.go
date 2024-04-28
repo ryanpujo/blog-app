@@ -3,6 +3,7 @@ package services
 import (
 	"github.com/ryanpujo/blog-app/internal/repositories"
 	"github.com/ryanpujo/blog-app/models"
+	"github.com/ryanpujo/blog-app/utils"
 )
 
 type BlogService interface {
@@ -24,6 +25,10 @@ func NewBlogService(repo repositories.StoryRepository) *blogService {
 }
 
 func (s *blogService) Create(payload models.StoryPayload) (*uint, error) {
+	payload.WordCount = utils.CountWords(payload.Content)
+	if err := models.IsValidWordCountForStoryType(payload.Type, payload.WordCount); err != nil {
+		return nil, err
+	}
 	return s.repo.Create(payload)
 }
 
@@ -40,5 +45,9 @@ func (s *blogService) DeleteById(id uint) error {
 }
 
 func (s *blogService) Update(id uint, payload models.StoryPayload) error {
+	payload.WordCount = utils.CountWords(payload.Content)
+	if err := models.IsValidWordCountForStoryType(payload.Type, payload.WordCount); err != nil {
+		return err
+	}
 	return s.repo.Update(id, payload)
 }

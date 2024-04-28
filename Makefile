@@ -37,7 +37,7 @@ integration_test:
 	cd test/integration && go test . --coverprofile=cover.out
 	@echo "finished running all test"
 
-user_service_test:
+service_test:
 	@echo "running test for user service"
 	cd internal/services && go test . --coverprofile=cover.out
 	@echo "finished running all test"
@@ -50,7 +50,7 @@ user_controller_test:
 show_repo:
 	cd internal/repositories && go tool cover -html=cover.out
 
-show_user_service:
+show_service:
 	cd internal/services && go tool cover -html=cover.out
 
 show_user_controller:

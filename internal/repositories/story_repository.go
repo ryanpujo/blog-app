@@ -36,8 +36,8 @@ func (repo *storyRepository) Create(blog models.StoryPayload) (*uint, error) {
 
 	// Prepare the SQL statement for inserting a new blog post.
 	stmt := `
-		INSERT INTO blogs (title, content, author_id, slug, excerpt)
-		VALUES ($1, $2, $3, $4, $5) RETURNING id
+		INSERT INTO stories (title, content, author_id, slug, excerpt, type, word_count)
+		VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id
 	`
 
 	// Initialize the variable to store the returned ID.
@@ -49,6 +49,8 @@ func (repo *storyRepository) Create(blog models.StoryPayload) (*uint, error) {
 		blog.AuthorID,
 		blog.Slug,
 		blog.Excerpt,
+		blog.Type.String(),
+		blog.WordCount,
 	).Scan(&id)
 	if err != nil {
 		// Handle any errors that occurred during the query execution.
@@ -68,9 +70,9 @@ func (repo *storyRepository) FindById(id uint) (*models.Story, error) {
 
 	// SQL statement to select a blog and its author's details.
 	stmt := `
-	SELECT b.id, b.title, b.content, b.slug, b.excerpt, b.status, b.published_at, b.updated_at,
+	SELECT b.id, b.title, b.content, b.slug, b.excerpt, b.status, b.published_at, b.updated_at, b.type, b.word_count,
 	       u.id AS author_id, u.first_name, u.last_name, u.username, u.email
-	FROM public.blogs AS b
+	FROM public.stories AS b
 	INNER JOIN public.users AS u ON b.author_id = u.id
 	WHERE b.id = $1;
 	`
@@ -91,6 +93,8 @@ func (repo *storyRepository) FindById(id uint) (*models.Story, error) {
 		&blog.Status,
 		&blog.PublishedAt,
 		&blog.UpdatedAt,
+		&blog.Type,
+		&blog.WordCount,
 		&blog.Author.ID,
 		&blog.Author.FirstName,
 		&blog.Author.LastName,
@@ -114,9 +118,9 @@ func (repo *storyRepository) FindBlogs() ([]*models.Story, error) {
 
 	// SQL statement to select all blogs and their authors' details.
 	stmt := `
-	SELECT b.id, b.title, b.content, b.slug, b.excerpt, b.status, b.published_at, b.updated_at,
+	SELECT b.id, b.title, b.content, b.slug, b.excerpt, b.status, b.published_at, b.updated_at, b.type, b.word_count,
 	       u.id AS author_id, u.first_name, u.last_name, u.username, u.email
-	FROM public.blogs AS b
+	FROM public.stories AS b
 	INNER JOIN public.users AS u ON b.author_id = u.id
 	`
 
@@ -144,6 +148,8 @@ func (repo *storyRepository) FindBlogs() ([]*models.Story, error) {
 			&blog.Status,
 			&blog.PublishedAt,
 			&blog.UpdatedAt,
+			&blog.Type,
+			&blog.WordCount,
 			&blog.Author.ID,
 			&blog.Author.FirstName,
 			&blog.Author.LastName,
@@ -175,7 +181,7 @@ func (repo *storyRepository) DeleteById(id uint) error {
 
 	// SQL statement to delete a blog post by ID.
 	stmt := `
-		DELETE FROM public.blogs WHERE id = $1;
+		DELETE FROM public.stories WHERE id = $1;
 	`
 
 	// Execute the delete statement.
@@ -210,13 +216,15 @@ func (repo *storyRepository) Update(id uint, payload models.StoryPayload) error 
 
 	// SQL statement to update a blog post.
 	stmt := `
-	UPDATE public.blogs
+	UPDATE public.stories
 	SET
 		title = $1,
 		content = $2,
 		slug = $3,
-		excerpt = $4
-	WHERE id = $5;
+		excerpt = $4,
+		type = $5,
+		word_count = $6
+	WHERE id = $7;
 	`
 
 	// Execute the update statement with the provided payload and ID.
@@ -225,6 +233,8 @@ func (repo *storyRepository) Update(id uint, payload models.StoryPayload) error 
 		payload.Content,
 		payload.Slug,
 		payload.Excerpt,
+		payload.Type,
+		payload.WordCount,
 		id,
 	)
 	if err != nil {

@@ -42,10 +42,12 @@ var id = uint(1)
 
 func Test_blogService_Create(t *testing.T) {
 	testingTable := map[string]struct {
+		payload models.StoryPayload
 		arrange func()
 		assert  func(t *testing.T, actualID *uint, err error)
 	}{
 		"success": {
+			payload: models.StoryPayload{Type: 1, Content: loremGenerator.Generate(3000)},
 			arrange: func() {
 				mockBlogRepo.On("Create", mock.Anything).Return(&id, nil).Once()
 			},
@@ -55,6 +57,7 @@ func Test_blogService_Create(t *testing.T) {
 			},
 		},
 		"failed": {
+			payload: models.StoryPayload{Type: 1, Content: loremGenerator.Generate(3000)},
 			arrange: func() {
 				mockBlogRepo.On("Create", mock.Anything).Return((*uint)(nil), errors.New("failed")).Once()
 			},
@@ -64,13 +67,22 @@ func Test_blogService_Create(t *testing.T) {
 				require.Equal(t, "failed", err.Error())
 			},
 		},
+		"word count failed": {
+			payload: models.StoryPayload{Type: 3, Content: loremGenerator.Generate(1000)},
+			arrange: func() {},
+			assert: func(t *testing.T, actualID *uint, err error) {
+				require.Error(t, err)
+				require.Nil(t, actualID)
+				require.Equal(t, "story error: word count for novella should be between 20,000 and 40,000 (story type: novella, word count: 1000)", err.Error())
+			},
+		},
 	}
 
 	for name, tc := range testingTable {
 		t.Run(name, func(t *testing.T) {
 			tc.arrange()
 
-			id, err := blogService.Create(models.StoryPayload{})
+			id, err := blogService.Create(tc.payload)
 
 			tc.assert(t, id, err)
 		})
@@ -186,10 +198,12 @@ func Test_blogService_DeleteById(t *testing.T) {
 
 func Test_blogService_Update(t *testing.T) {
 	testTable := map[string]struct {
+		payload models.StoryPayload
 		arrange func()
 		assert  func(t *testing.T, err error)
 	}{
 		"success": {
+			payload: models.StoryPayload{Type: 1, Content: loremGenerator.Generate(3000)},
 			arrange: func() {
 				mockBlogRepo.On("Update", mock.Anything, mock.Anything).Return(nil).Once()
 			},
@@ -198,6 +212,7 @@ func Test_blogService_Update(t *testing.T) {
 			},
 		},
 		"failed": {
+			payload: models.StoryPayload{Type: 1, Content: loremGenerator.Generate(3000)},
 			arrange: func() {
 				mockBlogRepo.On("Update", mock.Anything, mock.Anything).Return(errors.New("failed")).Once()
 			},
@@ -206,13 +221,21 @@ func Test_blogService_Update(t *testing.T) {
 				require.Equal(t, "failed", err.Error())
 			},
 		},
+		"word count failed": {
+			payload: models.StoryPayload{Type: 1, Content: loremGenerator.Generate(500)},
+			arrange: func() {},
+			assert: func(t *testing.T, err error) {
+				require.Error(t, err)
+				require.Equal(t, "story error: word count for short story should be between 1000 and 7500 (story type: short_story, word count: 500)", err.Error())
+			},
+		},
 	}
 
 	for name, tc := range testTable {
 		t.Run(name, func(t *testing.T) {
 			tc.arrange()
 
-			err := blogService.Update(1, models.StoryPayload{})
+			err := blogService.Update(1, tc.payload)
 
 			tc.assert(t, err)
 		})
