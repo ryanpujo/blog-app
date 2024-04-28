@@ -15,7 +15,7 @@ const (
 )
 
 // Blog represents the structure of our resource and includes validation tags for Gin binding.
-type BlogPayload struct {
+type StoryPayload struct {
 	ID          uint       `json:"id" binding:"required"`
 	Title       string     `json:"title" binding:"required,max=255"`
 	Content     string     `json:"content" binding:"required"`
@@ -43,7 +43,7 @@ func (st StoryType) String() string {
 	return [4]string{"flash_fiction", "short_story", "novelette", "novella"}[st]
 }
 
-type Blog struct {
+type Story struct {
 	ID          uint       `json:"id" binding:"required"`
 	Title       string     `json:"title" binding:"required,max=255"`
 	Content     string     `json:"content" binding:"required"`
