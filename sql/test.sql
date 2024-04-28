@@ -71,8 +71,26 @@ CREATE TABLE public.stories (
     type story_type NOT NULL, 
     word_count INTEGER NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT word_count_check CHECK (
+        (type = 'flash_fiction' AND word_count > 100 AND word_count <= 1000) OR
+        (type = 'short_story' AND word_count > 1000 AND word_count <= 7500) OR
+        (type = 'novelette' AND word_count > 7500 AND word_count <= 20000) OR
+        (type = 'novella' AND word_count > 20000 AND word_count <= 40000)
+    )
 );
+
+CREATE OR REPLACE FUNCTION set_word_count() RETURNS TRIGGER AS $$
+BEGIN
+    NEW.word_count := array_length(regexp_split_to_array(NEW.content, '\W'), 1);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER word_count_trigger
+BEFORE INSERT OR UPDATE ON public.stories
+FOR EACH ROW EXECUTE FUNCTION set_word_count();
+
 
 
 CREATE TABLE public.categories (
@@ -206,14 +224,14 @@ INSERT INTO public.users (first_name, last_name, username, password, email) VALU
 INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Patricia', 'Anderson', 'patriciaanderson', 'password123', 'patricia.anderson@example.com');
 
 -- Insert queries for 'blogs' table with reference to 'users' table
-INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type, word_count) VALUES ('First Blog Post', 'Content of the first blog post', 1, 'first-blog-post', 'This is the excerpt of the first blog post', 'published', 'flash_fiction', 500);
-INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type, word_count) VALUES ('Second Blog Post', 'Content of the second blog post', 2, 'second-blog-post', 'This is the excerpt of the second blog post', 'published', 'short_story', 3000);
-INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type, word_count) VALUES ('Third Blog Post', 'Content of the third blog post', 3, 'third-blog-post', 'This is the excerpt of the third blog post', 'draft', 'novelette', 15000);
-INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type, word_count) VALUES ('Fourth Blog Post', 'Content of the fourth blog post', 4, 'fourth-blog-post', 'This is the excerpt of the fourth blog post', 'draft', 'novella', 30000);
-INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type, word_count) VALUES ('Fifth Blog Post', 'Content of the fifth blog post', 5, 'fifth-blog-post', 'This is the excerpt of the fifth blog post', 'archived', 'flash_fiction', 800);
-INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type, word_count) VALUES ('Sixth Blog Post', 'Content of the sixth blog post', 6, 'sixth-blog-post', 'This is the excerpt of the sixth blog post', 'archived', 'short_story', 5000);
-INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type, word_count) VALUES ('Seventh Blog Post', 'Content of the seventh blog post', 7, 'seventh-blog-post', 'This is the excerpt of the seventh blog post', 'published', 'novelette', 18000);
-INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type, word_count) VALUES ('Eighth Blog Post', 'Content of the eighth blog post', 8, 'eighth-blog-post', 'This is the excerpt of the eighth blog post', 'draft', 'novella', 35000);
-INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type, word_count) VALUES ('Ninth Blog Post', 'Content of the ninth blog post', 9, 'ninth-blog-post', 'This is the excerpt of the ninth blog post', 'archived', 'flash_fiction', 900);
-INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type, word_count) VALUES ('Tenth Blog Post', 'Content of the tenth blog post', 10, 'tenth-blog-post', 'This is the excerpt of the tenth blog post', 'published', 'short_story', 7000);
+INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type) VALUES ('First Blog Post', 'Content of the first blog post', 1, 'first-blog-post', 'This is the excerpt of the first blog post', 'published', 'flash_fiction');
+INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type) VALUES ('Second Blog Post', 'Content of the second blog post', 2, 'second-blog-post', 'This is the excerpt of the second blog post', 'published', 'short_story');
+INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type) VALUES ('Third Blog Post', 'Content of the third blog post', 3, 'third-blog-post', 'This is the excerpt of the third blog post', 'draft', 'novelette');
+INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type) VALUES ('Fourth Blog Post', 'Content of the fourth blog post', 4, 'fourth-blog-post', 'This is the excerpt of the fourth blog post', 'draft', 'novella');
+INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type) VALUES ('Fifth Blog Post', 'Content of the fifth blog post', 5, 'fifth-blog-post', 'This is the excerpt of the fifth blog post', 'archived', 'flash_fiction');
+INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type) VALUES ('Sixth Blog Post', 'Content of the sixth blog post', 6, 'sixth-blog-post', 'This is the excerpt of the sixth blog post', 'archived', 'short_story');
+INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type) VALUES ('Seventh Blog Post', 'Content of the seventh blog post', 7, 'seventh-blog-post', 'This is the excerpt of the seventh blog post', 'published', 'novelette');
+INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type) VALUES ('Eighth Blog Post', 'Content of the eighth blog post', 8, 'eighth-blog-post', 'This is the excerpt of the eighth blog post', 'draft', 'novella');
+INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type) VALUES ('Ninth Blog Post', 'Content of the ninth blog post', 9, 'ninth-blog-post', 'This is the excerpt of the ninth blog post', 'archived', 'flash_fiction');
+INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type) VALUES ('Tenth Blog Post', 'Content of the tenth blog post', 10, 'tenth-blog-post', 'This is the excerpt of the tenth blog post', 'published', 'short_story');
 
