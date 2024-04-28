@@ -10,10 +10,10 @@ type BlogController interface {
 }
 
 type blogController struct {
-	s services.BlogService
+	s services.StoryService
 }
 
-func NewBlogController(s services.BlogService) *blogController {
+func NewBlogController(s services.StoryService) *blogController {
 	return &blogController{
 		s: s,
 	}

@@ -11,7 +11,7 @@ import (
 
 var (
 	mockBlogRepo   *MockBlogRepository
-	blogService    services.BlogService
+	blogService    services.StoryService
 	mockRepo       *MockUserRepository
 	userService    services.UserService
 	loremGenerator lorem.Generator

@@ -9,19 +9,19 @@ type MockBlogService struct {
 	mock.Mock
 }
 
-func (m *MockBlogService) Create(payload models.BlogPayload) (*uint, error) {
+func (m *MockBlogService) Create(payload models.StoryPayload) (*uint, error) {
 	args := m.Called(payload)
 	return args.Get(0).(*uint), args.Error(1)
 }
 
-func (m *MockBlogService) FindById(id uint) (*models.Blog, error) {
+func (m *MockBlogService) FindById(id uint) (*models.Story, error) {
 	args := m.Called(id)
-	return args.Get(0).(*models.Blog), args.Error(1)
+	return args.Get(0).(*models.Story), args.Error(1)
 }
 
-func (m *MockBlogService) FindBlogs() ([]*models.Blog, error) {
+func (m *MockBlogService) FindBlogs() ([]*models.Story, error) {
 	args := m.Called()
-	return args.Get(0).([]*models.Blog), args.Error(1)
+	return args.Get(0).([]*models.Story), args.Error(1)
 }
 
 func (m *MockBlogService) DeleteById(id uint) error {
@@ -29,7 +29,7 @@ func (m *MockBlogService) DeleteById(id uint) error {
 	return args.Error(0)
 }
 
-func (m *MockBlogService) Update(id uint, payload models.BlogPayload) error {
+func (m *MockBlogService) Update(id uint, payload models.StoryPayload) error {
 	args := m.Called(id, payload)
 	return args.Error(0)
 }

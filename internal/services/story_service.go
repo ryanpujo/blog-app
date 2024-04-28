@@ -6,7 +6,7 @@ import (
 	"github.com/ryanpujo/blog-app/utils"
 )
 
-type BlogService interface {
+type StoryService interface {
 	Create(payload models.StoryPayload) (*uint, error)
 	FindById(id uint) (*models.Story, error)
 	FindBlogs() ([]*models.Story, error)
@@ -14,17 +14,17 @@ type BlogService interface {
 	Update(id uint, payload models.StoryPayload) error
 }
 
-type blogService struct {
+type storyService struct {
 	repo repositories.StoryRepository
 }
 
-func NewBlogService(repo repositories.StoryRepository) *blogService {
-	return &blogService{
+func NewBlogService(repo repositories.StoryRepository) *storyService {
+	return &storyService{
 		repo: repo,
 	}
 }
 
-func (s *blogService) Create(payload models.StoryPayload) (*uint, error) {
+func (s *storyService) Create(payload models.StoryPayload) (*uint, error) {
 	payload.WordCount = utils.CountWords(payload.Content)
 	if err := models.IsValidWordCountForStoryType(payload.Type, payload.WordCount); err != nil {
 		return nil, err
@@ -32,19 +32,19 @@ func (s *blogService) Create(payload models.StoryPayload) (*uint, error) {
 	return s.repo.Create(payload)
 }
 
-func (s *blogService) FindById(id uint) (*models.Story, error) {
+func (s *storyService) FindById(id uint) (*models.Story, error) {
 	return s.repo.FindById(id)
 }
 
-func (s *blogService) FindBlogs() ([]*models.Story, error) {
+func (s *storyService) FindBlogs() ([]*models.Story, error) {
 	return s.repo.FindBlogs()
 }
 
-func (s *blogService) DeleteById(id uint) error {
+func (s *storyService) DeleteById(id uint) error {
 	return s.repo.DeleteById(id)
 }
 
-func (s *blogService) Update(id uint, payload models.StoryPayload) error {
+func (s *storyService) Update(id uint, payload models.StoryPayload) error {
 	payload.WordCount = utils.CountWords(payload.Content)
 	if err := models.IsValidWordCountForStoryType(payload.Type, payload.WordCount); err != nil {
 		return err
