@@ -63,7 +63,7 @@ CREATE TABLE public.stories (
     author_id INTEGER NOT NULL REFERENCES users(id),
     slug VARCHAR(255) UNIQUE,
     excerpt TEXT,
-    status VARCHAR(20) NOT NULL DEFAULT 'draft',
+    status ENUM('draft', 'published', 'archived') NOT NULL NOT NULL DEFAULT 'draft',
     published_at TIMESTAMP WITH TIME ZONE,
     type ENUM('flash_fiction', 'short_story', 'novelette', 'novella') NOT NULL, 
     word_count INTEGER NOT NULL,
