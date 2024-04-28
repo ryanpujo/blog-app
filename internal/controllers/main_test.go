@@ -21,7 +21,7 @@ func TestMain(m *testing.M) {
 	userController := controllers.NewUserController(mockService)
 
 	mockBlogService = new(MockBlogService)
-	blogContorller := controllers.NewBlogController(mockBlogService)
+	blogContorller := controllers.NewStoryController(mockBlogService)
 
 	adapter := adapter.AppController{
 		UserController: userController,

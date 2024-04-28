@@ -18,7 +18,7 @@ type storyService struct {
 	repo repositories.StoryRepository
 }
 
-func NewBlogService(repo repositories.StoryRepository) *storyService {
+func NewStoryService(repo repositories.StoryRepository) *storyService {
 	return &storyService{
 		repo: repo,
 	}

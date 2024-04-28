@@ -21,7 +21,7 @@ type storyRepository struct {
 	Db *sql.DB
 }
 
-func NewBlogRepository(db *sql.DB) *storyRepository {
+func NewStoryRepository(db *sql.DB) *storyRepository {
 	return &storyRepository{
 		Db: db,
 	}

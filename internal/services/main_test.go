@@ -23,7 +23,7 @@ func TestMain(m *testing.M) {
 	userService = services.NewUserService(mockRepo)
 
 	mockBlogRepo = new(MockBlogRepository)
-	blogService = services.NewBlogService(mockBlogRepo)
+	blogService = services.NewStoryService(mockBlogRepo)
 	loremGenerator = *lorem.NewGenerator()
 	os.Exit(m.Run())
 }
