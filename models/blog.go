@@ -24,8 +24,23 @@ type BlogPayload struct {
 	Excerpt     *string    `json:"excerpt,omitempty"`
 	Status      BlogStatus `json:"status" binding:"required,oneof=draft published archived"`
 	PublishedAt *time.Time `json:"published_at,omitempty"`
+	Type        StoryType  `json:"type" binding:"required"`
+	WordCount   uint       `json:"word_count"`
 	CreatedAt   time.Time  `json:"created_at,omitempty"`
 	UpdatedAt   *time.Time `json:"updated_at,omitempty"`
+}
+
+type StoryType int
+
+const (
+	FlashFiction StoryType = iota
+	ShortStory
+	Novelette
+	Novella
+)
+
+func (st StoryType) String() string {
+	return [4]string{"flash_fiction", "short_story", "novelette", "novella"}[st]
 }
 
 type Blog struct {
@@ -37,6 +52,8 @@ type Blog struct {
 	Excerpt     *string    `json:"excerpt,omitempty"`
 	Status      BlogStatus `json:"status" binding:"required,oneof=draft published archived"`
 	PublishedAt *time.Time `json:"published_at,omitempty"`
+	Type        string     `json:"type" binding:"required"`
+	WordCount   uint       `json:"word_count" binding:"required"`
 	CreatedAt   time.Time  `json:"created_at,omitempty"`
 	UpdatedAt   *time.Time `json:"updated_at,omitempty"`
 }
