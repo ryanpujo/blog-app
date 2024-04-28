@@ -2,6 +2,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -66,4 +67,43 @@ type Story struct {
 	WordCount   uint       `json:"word_count" binding:"required"`                                             // Word count of the story
 	CreatedAt   time.Time  `json:"created_at,omitempty"`                                                      // Date and time when the story was created
 	UpdatedAt   *time.Time `json:"updated_at,omitempty"`                                                      // Date and time when the story was last updated
+}
+
+// IsValidWordCountForStoryType checks if the word count of a story falls within the typical range for its type.
+// It takes two parameters: storyType and wordCount. storyType is the type of the story and wordCount is the number of words in the story.
+// It returns nil if the word count is within the typical range for the given story type, and a StoryError otherwise.
+func IsValidWordCountForStoryType(storyType StoryType, wordCount int) error {
+	switch storyType {
+	case FlashFiction:
+		if wordCount <= 100 || wordCount > 1000 {
+			return &StoryError{storyType, wordCount, "word count for flash fiction should be between 100 and 1000"}
+		}
+	case ShortStory:
+		if wordCount <= 1000 || wordCount > 7500 {
+			return &StoryError{storyType, wordCount, "word count for short story should be between 1000 and 7500"}
+		}
+	case Novelette:
+		if wordCount <= 7500 || wordCount > 20_000 {
+			return &StoryError{storyType, wordCount, "word count for novelette should be between 7500 and 20,000"}
+		}
+	case Novella:
+		if wordCount <= 20_000 || wordCount > 40_000 {
+			return &StoryError{storyType, wordCount, "word count for novella should be between 20,000 and 40,000"}
+		}
+	default:
+		return &StoryError{storyType, wordCount, "invalid story type"}
+	}
+	return nil
+}
+
+// StoryError represents an error that occurs during story operations.
+type StoryError struct {
+	StoryType StoryType
+	WordCount int
+	Message   string
+}
+
+// Error implements the error interface.
+func (e *StoryError) Error() string {
+	return fmt.Sprintf("story error: %s (story type: %s, word count: %d)", e.Message, e.StoryType, e.WordCount)
 }
