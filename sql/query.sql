@@ -10,16 +10,16 @@ CREATE TABLE public.users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('John', 'Doe', 'johndoe', 'password123', 'john.doe@example.com');
-INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Jane', 'Smith', 'janesmith', 'password123', 'jane.smith@example.com');
-INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Emily', 'Johnson', 'emilyj', 'password123', 'emily.johnson@example.com');
-INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Michael', 'Brown', 'michaelb', 'password123', 'michael.brown@example.com');
-INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('David', 'Williams', 'davidw', 'password123', 'david.williams@example.com');
-INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Sarah', 'Miller', 'sarahm', 'password123', 'sarah.miller@example.com');
-INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Daniel', 'Davis', 'danield', 'password123', 'daniel.davis@example.com');
-INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Jessica', 'Garcia', 'jessicag', 'password123', 'jessica.garcia@example.com');
-INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('William', 'Martinez', 'williamm', 'password123', 'william.martinez@example.com');
-INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Laura', 'Hernandez', 'laurah', 'password123', 'laura.hernandez@example.com');
+-- INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('John', 'Doe', 'johndoe', 'password123', 'john.doe@example.com');
+-- INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Jane', 'Smith', 'janesmith', 'password123', 'jane.smith@example.com');
+-- INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Emily', 'Johnson', 'emilyj', 'password123', 'emily.johnson@example.com');
+-- INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Michael', 'Brown', 'michaelb', 'password123', 'michael.brown@example.com');
+-- INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('David', 'Williams', 'davidw', 'password123', 'david.williams@example.com');
+-- INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Sarah', 'Miller', 'sarahm', 'password123', 'sarah.miller@example.com');
+-- INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Daniel', 'Davis', 'danield', 'password123', 'daniel.davis@example.com');
+-- INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Jessica', 'Garcia', 'jessicag', 'password123', 'jessica.garcia@example.com');
+-- INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('William', 'Martinez', 'williamm', 'password123', 'william.martinez@example.com');
+-- INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Laura', 'Hernandez', 'laurah', 'password123', 'laura.hernandez@example.com');
 
 
 
@@ -56,20 +56,24 @@ CREATE TABLE public.role_permissions (
 );
 
 -- stories table
+CREATE TYPE story_status AS ENUM('draft', 'published', 'archived');
+CREATE TYPE story_type AS ENUM('flash_fiction', 'short_story', 'novelette', 'novella');
+
 CREATE TABLE public.stories (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
-    author_id INTEGER NOT NULL REFERENCES users(id),
+    author_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     slug VARCHAR(255) UNIQUE,
     excerpt TEXT,
-    status ENUM('draft', 'published', 'archived') NOT NULL NOT NULL DEFAULT 'draft',
+    status story_status NOT NULL DEFAULT 'draft',
     published_at TIMESTAMP WITH TIME ZONE,
-    type ENUM('flash_fiction', 'short_story', 'novelette', 'novella') NOT NULL, 
+    type story_type NOT NULL, 
     word_count INTEGER NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
 
 CREATE TABLE public.categories (
     id SERIAL PRIMARY KEY,
@@ -187,3 +191,29 @@ CREATE TRIGGER update_role_permission_modtime
 BEFORE UPDATE ON public.role_permissions
 FOR EACH ROW
 EXECUTE FUNCTION update_modified_column();
+
+
+-- Insert queries for 'users' table
+INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('John', 'Doe', 'johndoe', 'password123', 'john.doe@example.com');
+INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Jane', 'Smith', 'janesmith', 'password123', 'jane.smith@example.com');
+INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Emily', 'Johnson', 'emilyjohnson', 'password123', 'emily.johnson@example.com');
+INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Michael', 'Brown', 'michaelbrown', 'password123', 'michael.brown@example.com');
+INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('David', 'Jones', 'davidjones', 'password123', 'david.jones@example.com');
+INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Sarah', 'Miller', 'sarahmiller', 'password123', 'sarah.miller@example.com');
+INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('James', 'Wilson', 'jameswilson', 'password123', 'james.wilson@example.com');
+INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Linda', 'Moore', 'lindamoore', 'password123', 'linda.moore@example.com');
+INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Robert', 'Taylor', 'roberttaylor', 'password123', 'robert.taylor@example.com');
+INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Patricia', 'Anderson', 'patriciaanderson', 'password123', 'patricia.anderson@example.com');
+
+-- Insert queries for 'blogs' table with reference to 'users' table
+INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type, word_count) VALUES ('First Blog Post', 'Content of the first blog post', 1, 'first-blog-post', 'This is the excerpt of the first blog post', 'published', 'flash_fiction', 500);
+INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type, word_count) VALUES ('Second Blog Post', 'Content of the second blog post', 2, 'second-blog-post', 'This is the excerpt of the second blog post', 'published', 'short_story', 3000);
+INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type, word_count) VALUES ('Third Blog Post', 'Content of the third blog post', 3, 'third-blog-post', 'This is the excerpt of the third blog post', 'draft', 'novelette', 15000);
+INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type, word_count) VALUES ('Fourth Blog Post', 'Content of the fourth blog post', 4, 'fourth-blog-post', 'This is the excerpt of the fourth blog post', 'draft', 'novella', 30000);
+INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type, word_count) VALUES ('Fifth Blog Post', 'Content of the fifth blog post', 5, 'fifth-blog-post', 'This is the excerpt of the fifth blog post', 'archived', 'flash_fiction', 800);
+INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type, word_count) VALUES ('Sixth Blog Post', 'Content of the sixth blog post', 6, 'sixth-blog-post', 'This is the excerpt of the sixth blog post', 'archived', 'short_story', 5000);
+INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type, word_count) VALUES ('Seventh Blog Post', 'Content of the seventh blog post', 7, 'seventh-blog-post', 'This is the excerpt of the seventh blog post', 'published', 'novelette', 18000);
+INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type, word_count) VALUES ('Eighth Blog Post', 'Content of the eighth blog post', 8, 'eighth-blog-post', 'This is the excerpt of the eighth blog post', 'draft', 'novella', 35000);
+INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type, word_count) VALUES ('Ninth Blog Post', 'Content of the ninth blog post', 9, 'ninth-blog-post', 'This is the excerpt of the ninth blog post', 'archived', 'flash_fiction', 900);
+INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type, word_count) VALUES ('Tenth Blog Post', 'Content of the tenth blog post', 10, 'tenth-blog-post', 'This is the excerpt of the tenth blog post', 'published', 'short_story', 7000);
+
