@@ -55,8 +55,8 @@ CREATE TABLE public.role_permissions (
     FOREIGN KEY (permission_id) REFERENCES public.permissions(id)
 );
 
--- Blogs table
-CREATE TABLE public.blogs (
+-- stories table
+CREATE TABLE public.stories (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
@@ -65,6 +65,8 @@ CREATE TABLE public.blogs (
     excerpt TEXT,
     status VARCHAR(20) NOT NULL DEFAULT 'draft',
     published_at TIMESTAMP WITH TIME ZONE,
+    type ENUM('flash_fiction', 'short_story', 'novelette', 'novella') NOT NULL, 
+    word_count INTEGER NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -75,11 +77,11 @@ CREATE TABLE public.categories (
     description TEXT
 );
 
-CREATE TABLE public.blog_categories (
-    blog_id INT NOT NULL,
+CREATE TABLE public.stories_categories (
+    story_id INT NOT NULL,
     category_id INT NOT NULL,
-    PRIMARY KEY (blog_id, category_id),
-    FOREIGN KEY (blog_id) REFERENCES public.blogs(id),
+    PRIMARY KEY (story_id, category_id),
+    FOREIGN KEY (story_id) REFERENCES public.stories(id),
     FOREIGN KEY (category_id) REFERENCES public.categories(id)
 );
 
@@ -95,24 +97,24 @@ CREATE TABLE public.user_follows (
 -- Image Storage
 CREATE TABLE public.images (
     id SERIAL PRIMARY KEY,
-    blog_id INT NOT NULL,
+    story_id INT NOT NULL,
     image_url TEXT NOT NULL,
     uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (blog_id) REFERENCES public.blogs(id)
+    FOREIGN KEY (story_id) REFERENCES public.stories(id)
 );
 
 -- Likes table
 CREATE TABLE public.likes (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id),
-    blog_id INT NOT NULL REFERENCES blogs(id),
+    story_id INT NOT NULL REFERENCES stories(id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Comments table (simplified for hierarchical modeling)
 CREATE TABLE public.comments (
     id SERIAL PRIMARY KEY,
-    blog_id INT NOT NULL REFERENCES blogs(id),
+    story_id INT NOT NULL REFERENCES stories(id),
     user_id INT NOT NULL REFERENCES users(id),
     parent_comment_id INT REFERENCES comments(id), -- Self-referencing 
     content TEXT,
@@ -127,20 +129,20 @@ CREATE TABLE public.tags (
 
 -- Post_tags table to associate posts with tags (many-to-many)
 CREATE TABLE public.post_tags (
-    blog_id INT NOT NULL,
+    story_id INT NOT NULL,
     tag_id INT NOT NULL,
-    PRIMARY KEY (blog_id, tag_id),
-    FOREIGN KEY (blog_id) REFERENCES public.blogs(id),
+    PRIMARY KEY (story_id, tag_id),
+    FOREIGN KEY (story_id) REFERENCES public.stories(id),
     FOREIGN KEY (tag_id) REFERENCES public.tags(id)
 );
 
 
 -- Indexes for optimization
 CREATE INDEX idx_users_username ON public.users(username);
-CREATE INDEX idx_blogs_author_id ON public.blogs(author_id);
-CREATE INDEX idx_images_blog_id ON public.images(blog_id);
-CREATE INDEX idx_blogs_slug ON public.blogs(slug);
-CREATE INDEX idx_blogs_published_at ON public.blogs(published_at);
+CREATE INDEX idx_stories_author_id ON public.stories(author_id);
+CREATE INDEX idx_images_story_id ON public.images(story_id);
+CREATE INDEX idx_stories_slug ON public.stories(slug);
+CREATE INDEX idx_stories_published_at ON public.stories(published_at);
 
 -- Triggers for automatic 'updated_at' timestamp
 CREATE OR REPLACE FUNCTION update_modified_column()
@@ -156,9 +158,9 @@ BEFORE UPDATE ON public.users
 FOR EACH ROW
 EXECUTE FUNCTION update_modified_column();
 
--- Trigger for blogs table
-CREATE TRIGGER update_blog_modtime
-BEFORE UPDATE ON public.blogs
+-- Trigger for stories table
+CREATE TRIGGER update_story_modtime
+BEFORE UPDATE ON public.stories
 FOR EACH ROW
 EXECUTE FUNCTION update_modified_column();
 
