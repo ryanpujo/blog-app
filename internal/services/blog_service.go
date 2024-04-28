@@ -6,32 +6,32 @@ import (
 )
 
 type BlogService interface {
-	Create(payload models.BlogPayload) (*uint, error)
-	FindById(id uint) (*models.Blog, error)
-	FindBlogs() ([]*models.Blog, error)
+	Create(payload models.StoryPayload) (*uint, error)
+	FindById(id uint) (*models.Story, error)
+	FindBlogs() ([]*models.Story, error)
 	DeleteById(id uint) error
-	Update(id uint, payload models.BlogPayload) error
+	Update(id uint, payload models.StoryPayload) error
 }
 
 type blogService struct {
-	repo repositories.BlogRepository
+	repo repositories.StoryRepository
 }
 
-func NewBlogService(repo repositories.BlogRepository) *blogService {
+func NewBlogService(repo repositories.StoryRepository) *blogService {
 	return &blogService{
 		repo: repo,
 	}
 }
 
-func (s *blogService) Create(payload models.BlogPayload) (*uint, error) {
+func (s *blogService) Create(payload models.StoryPayload) (*uint, error) {
 	return s.repo.Create(payload)
 }
 
-func (s *blogService) FindById(id uint) (*models.Blog, error) {
+func (s *blogService) FindById(id uint) (*models.Story, error) {
 	return s.repo.FindById(id)
 }
 
-func (s *blogService) FindBlogs() ([]*models.Blog, error) {
+func (s *blogService) FindBlogs() ([]*models.Story, error) {
 	return s.repo.FindBlogs()
 }
 
@@ -39,6 +39,6 @@ func (s *blogService) DeleteById(id uint) error {
 	return s.repo.DeleteById(id)
 }
 
-func (s *blogService) Update(id uint, payload models.BlogPayload) error {
+func (s *blogService) Update(id uint, payload models.StoryPayload) error {
 	return s.repo.Update(id, payload)
 }

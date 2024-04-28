@@ -20,7 +20,7 @@ var (
 
 var (
 	testDB   *sql.DB
-	blogRepo repositories.BlogRepository
+	blogRepo repositories.StoryRepository
 	userRepo repositories.UserRepository
 	mock     sqlmock.Sqlmock
 )

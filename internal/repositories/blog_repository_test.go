@@ -13,7 +13,7 @@ import (
 )
 
 var excerpt = "a shorter post"
-var blogPayload = models.BlogPayload{
+var storyPayload = models.StoryPayload{
 	Title:    "my blog post",
 	Content:  "a very long post",
 	Slug:     "my-blog-post",
@@ -23,9 +23,9 @@ var blogPayload = models.BlogPayload{
 var id = uint(1)
 var expectExcerpt = "Test excerpt"
 var updatedAt = time.Now()
-var expectedBlog = &models.Blog{
+var expectedStory = &models.Story{
 	ID:          id,
-	Title:       "Test Blog",
+	Title:       "Test Story",
 	Content:     "This is a test blog content.",
 	Slug:        "test-blog",
 	Excerpt:     &expectExcerpt,
@@ -45,13 +45,13 @@ var expectedBlog = &models.Blog{
 func Test_blogRepo_Create(t *testing.T) {
 	// Define a table-driven test with different scenarios.
 	testTable := map[string]struct {
-		blog    models.BlogPayload
+		blog    models.StoryPayload
 		arrange func(mock sqlmock.Sqlmock)
 		assert  func(t *testing.T, actualID *uint, err error)
 	}{
 		// Test case for successful blog creation.
 		"success": {
-			blog: blogPayload,
+			blog: storyPayload,
 			arrange: func(mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 				mock.ExpectQuery("INSERT INTO blogs").
@@ -66,7 +66,7 @@ func Test_blogRepo_Create(t *testing.T) {
 		},
 		// Test case for failure due to scanning error.
 		"failed to scan": {
-			blog: blogPayload,
+			blog: storyPayload,
 			arrange: func(mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"id"})
 				mock.ExpectQuery("INSERT INTO blogs").
@@ -98,24 +98,24 @@ func Test_blogRepo_FindById(t *testing.T) {
 	// Define a table-driven test with different scenarios.
 	testTable := map[string]struct {
 		arrange func(mock sqlmock.Sqlmock)
-		assert  func(t *testing.T, actualBlog *models.Blog, err error)
+		assert  func(t *testing.T, actualBlog *models.Story, err error)
 	}{
 		// Test case for successful blog retrieval.
 		"success": {
 			arrange: func(mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"id", "title", "content", "slug", "excerpt", "status", "published_at", "updated_at", "author_id", "first_name", "last_name", "username", "email"}).
-					AddRow(expectedBlog.ID, expectedBlog.Title, expectedBlog.Content, expectedBlog.Slug,
-						expectedBlog.Excerpt, expectedBlog.Status, expectedBlog.PublishedAt,
-						expectedBlog.UpdatedAt, expectedBlog.Author.ID, expectedBlog.Author.FirstName,
-						expectedBlog.Author.LastName, expectedBlog.Author.Username, expectedBlog.Author.Email)
+					AddRow(expectedStory.ID, expectedStory.Title, expectedStory.Content, expectedStory.Slug,
+						expectedStory.Excerpt, expectedStory.Status, expectedStory.PublishedAt,
+						expectedStory.UpdatedAt, expectedStory.Author.ID, expectedStory.Author.FirstName,
+						expectedStory.Author.LastName, expectedStory.Author.Username, expectedStory.Author.Email)
 				mock.ExpectQuery(`SELECT (.+) FROM public.blogs AS b INNER JOIN public.users AS u ON b.author_id = u.id`).
 					WithArgs(id).
 					WillReturnRows(rows)
 			},
-			assert: func(t *testing.T, actualBlog *models.Blog, err error) {
+			assert: func(t *testing.T, actualBlog *models.Story, err error) {
 				require.NoError(t, err)
 				require.NotNil(t, actualBlog)
-				require.Equal(t, expectedBlog, actualBlog)
+				require.Equal(t, expectedStory, actualBlog)
 			},
 		},
 		"failed": {
@@ -125,7 +125,7 @@ func Test_blogRepo_FindById(t *testing.T) {
 					WithArgs(id).
 					WillReturnRows(rows)
 			},
-			assert: func(t *testing.T, actualBlog *models.Blog, err error) {
+			assert: func(t *testing.T, actualBlog *models.Story, err error) {
 				require.Error(t, err)
 				require.Nil(t, actualBlog)
 				require.Equal(t, utils.ErrNoDataFound, err)
@@ -144,30 +144,30 @@ func Test_blogRepo_FindById(t *testing.T) {
 }
 
 func Test_blogRepo_FindBlogs(t *testing.T) {
-	expectedBlogs := []*models.Blog{
-		expectedBlog,
-		expectedBlog,
+	expectedBlogs := []*models.Story{
+		expectedStory,
+		expectedStory,
 	}
 	testTable := map[string]struct {
 		arrange func(mock sqlmock.Sqlmock)
-		assert  func(t *testing.T, actualBlogs []*models.Blog, err error)
+		assert  func(t *testing.T, actualBlogs []*models.Story, err error)
 	}{
 		// Test case for successful blog retrieval.
 		"success": {
 			arrange: func(mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"id", "title", "content", "slug", "excerpt", "status", "published_at", "updated_at", "author_id", "first_name", "last_name", "username", "email"})
 
-				for _, expectedBlog := range expectedBlogs {
-					rows.AddRow(expectedBlog.ID, expectedBlog.Title, expectedBlog.Content, expectedBlog.Slug,
-						expectedBlog.Excerpt, expectedBlog.Status, expectedBlog.PublishedAt,
-						expectedBlog.UpdatedAt, expectedBlog.Author.ID, expectedBlog.Author.FirstName,
-						expectedBlog.Author.LastName, expectedBlog.Author.Username, expectedBlog.Author.Email)
+				for _, expectedStory := range expectedBlogs {
+					rows.AddRow(expectedStory.ID, expectedStory.Title, expectedStory.Content, expectedStory.Slug,
+						expectedStory.Excerpt, expectedStory.Status, expectedStory.PublishedAt,
+						expectedStory.UpdatedAt, expectedStory.Author.ID, expectedStory.Author.FirstName,
+						expectedStory.Author.LastName, expectedStory.Author.Username, expectedStory.Author.Email)
 				}
 
 				mock.ExpectQuery(`SELECT (.+) FROM public.blogs AS b INNER JOIN public.users AS u ON b.author_id = u.id`).
 					WillReturnRows(rows)
 			},
-			assert: func(t *testing.T, actualBlogs []*models.Blog, err error) {
+			assert: func(t *testing.T, actualBlogs []*models.Story, err error) {
 				require.NoError(t, err)
 				require.NotNil(t, actualBlogs)
 				require.Equal(t, 2, len(actualBlogs))
@@ -179,7 +179,7 @@ func Test_blogRepo_FindBlogs(t *testing.T) {
 				mock.ExpectQuery(`SELECT (.+) FROM public.blogs AS b INNER JOIN public.users AS u ON b.author_id = u.id`).
 					WillReturnError(utils.ErrNoDataFound)
 			},
-			assert: func(t *testing.T, actualBlogs []*models.Blog, err error) {
+			assert: func(t *testing.T, actualBlogs []*models.Story, err error) {
 				require.Error(t, err)
 				require.Nil(t, actualBlogs)
 				require.Equal(t, utils.ErrNoDataFound, err)
@@ -188,14 +188,14 @@ func Test_blogRepo_FindBlogs(t *testing.T) {
 		"scan error": {
 			arrange: func(mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"id", "title", "content", "slug", "excerpt", "status", "published_at", "updated_at", "author_id", "first_name", "last_name", "username", "email"}).
-					AddRow(expectedBlog.ID, expectedBlog.Title, expectedBlog.Content, expectedBlog.Slug,
-						expectedBlog.Excerpt, expectedBlog.Status, expectedBlog.PublishedAt,
-						expectedBlog.UpdatedAt, "expectedBlog.Author.ID", expectedBlog.Author.FirstName,
-						expectedBlog.Author.LastName, expectedBlog.Author.Username, expectedBlog.Author.Email)
+					AddRow(expectedStory.ID, expectedStory.Title, expectedStory.Content, expectedStory.Slug,
+						expectedStory.Excerpt, expectedStory.Status, expectedStory.PublishedAt,
+						expectedStory.UpdatedAt, "expectedStory.Author.ID", expectedStory.Author.FirstName,
+						expectedStory.Author.LastName, expectedStory.Author.Username, expectedStory.Author.Email)
 				mock.ExpectQuery(`SELECT (.+) FROM public.blogs AS b INNER JOIN public.users AS u ON b.author_id = u.id`).
 					WillReturnRows(rows)
 			},
-			assert: func(t *testing.T, actualBlogs []*models.Blog, err error) {
+			assert: func(t *testing.T, actualBlogs []*models.Story, err error) {
 				require.Error(t, err)
 				require.Nil(t, actualBlogs)
 			},
@@ -203,14 +203,14 @@ func Test_blogRepo_FindBlogs(t *testing.T) {
 		"row error": {
 			arrange: func(mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"id", "title", "content", "slug", "excerpt", "status", "published_at", "updated_at", "author_id", "first_name", "last_name", "username", "email"}).
-					AddRow(expectedBlog.ID, expectedBlog.Title, expectedBlog.Content, expectedBlog.Slug,
-						expectedBlog.Excerpt, expectedBlog.Status, expectedBlog.PublishedAt,
-						expectedBlog.UpdatedAt, expectedBlog.Author.ID, expectedBlog.Author.FirstName,
-						expectedBlog.Author.LastName, expectedBlog.Author.Username, expectedBlog.Author.Email).RowError(0, utils.ErrNoDataFound)
+					AddRow(expectedStory.ID, expectedStory.Title, expectedStory.Content, expectedStory.Slug,
+						expectedStory.Excerpt, expectedStory.Status, expectedStory.PublishedAt,
+						expectedStory.UpdatedAt, expectedStory.Author.ID, expectedStory.Author.FirstName,
+						expectedStory.Author.LastName, expectedStory.Author.Username, expectedStory.Author.Email).RowError(0, utils.ErrNoDataFound)
 				mock.ExpectQuery(`SELECT (.+) FROM public.blogs AS b INNER JOIN public.users AS u ON b.author_id = u.id`).
 					WillReturnRows(rows)
 			},
-			assert: func(t *testing.T, actualBlogs []*models.Blog, err error) {
+			assert: func(t *testing.T, actualBlogs []*models.Story, err error) {
 				require.Error(t, err)
 				require.Equal(t, utils.ErrNoDataFound, err)
 			},
@@ -290,7 +290,7 @@ func Test_blogRepo_DeleteById(t *testing.T) {
 
 func Test_blogRepo_Update(t *testing.T) {
 	testTable := map[string]struct {
-		payload models.BlogPayload
+		payload models.StoryPayload
 		arrange func()
 		assert  func(t *testing.T, err error)
 	}{
@@ -299,10 +299,10 @@ func Test_blogRepo_Update(t *testing.T) {
 				sqlmock.NewRows([]string{"id", "title", "content", "slug", "excerpt", "status", "published_at", "updated_at", "author_id", "first_name", "last_name", "username", "email"})
 
 				mock.ExpectExec("UPDATE public.blogs SET").WithArgs(
-					blogPayload.Title,
-					blogPayload.Content,
-					blogPayload.Slug,
-					blogPayload.Excerpt,
+					storyPayload.Title,
+					storyPayload.Content,
+					storyPayload.Slug,
+					storyPayload.Excerpt,
 					id,
 				).WillReturnResult(sqlmock.NewResult(0, 1))
 			},
@@ -315,10 +315,10 @@ func Test_blogRepo_Update(t *testing.T) {
 				sqlmock.NewRows([]string{"id", "title", "content", "slug", "excerpt", "status", "published_at", "updated_at", "author_id", "first_name", "last_name", "username", "email"})
 
 				mock.ExpectExec("UPDATE public.blogs SET").WithArgs(
-					blogPayload.Title,
-					blogPayload.Content,
-					blogPayload.Slug,
-					blogPayload.Excerpt,
+					storyPayload.Title,
+					storyPayload.Content,
+					storyPayload.Slug,
+					storyPayload.Excerpt,
 					id,
 				).WillReturnError(utils.ErrNoDataFound)
 			},
@@ -332,10 +332,10 @@ func Test_blogRepo_Update(t *testing.T) {
 				sqlmock.NewRows([]string{"id", "title", "content", "slug", "excerpt", "status", "published_at", "updated_at", "author_id", "first_name", "last_name", "username", "email"})
 
 				mock.ExpectExec("UPDATE public.blogs SET").WithArgs(
-					blogPayload.Title,
-					blogPayload.Content,
-					blogPayload.Slug,
-					blogPayload.Excerpt,
+					storyPayload.Title,
+					storyPayload.Content,
+					storyPayload.Slug,
+					storyPayload.Excerpt,
 					id,
 				).WillReturnResult(sqlmock.NewResult(0, 0))
 			},
@@ -349,10 +349,10 @@ func Test_blogRepo_Update(t *testing.T) {
 				sqlmock.NewRows([]string{"id", "title", "content", "slug", "excerpt", "status", "published_at", "updated_at", "author_id", "first_name", "last_name", "username", "email"})
 
 				mock.ExpectExec("UPDATE public.blogs SET").WithArgs(
-					blogPayload.Title,
-					blogPayload.Content,
-					blogPayload.Slug,
-					blogPayload.Excerpt,
+					storyPayload.Title,
+					storyPayload.Content,
+					storyPayload.Slug,
+					storyPayload.Excerpt,
 					id,
 				).WillReturnResult(sqlmock.NewErrorResult(utils.ErrNoDataFound))
 			},
@@ -367,7 +367,7 @@ func Test_blogRepo_Update(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			tc.arrange()
 
-			err := blogRepo.Update(id, blogPayload)
+			err := blogRepo.Update(id, storyPayload)
 
 			tc.assert(t, err)
 		})
