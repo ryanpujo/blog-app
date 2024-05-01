@@ -9,5 +9,6 @@ var mux = gin.Default()
 
 func Route(app adapter.AppController) *gin.Engine {
 	UserRoute(app.UserController)
+	StoryRoute(app.StoryController)
 	return mux
 }

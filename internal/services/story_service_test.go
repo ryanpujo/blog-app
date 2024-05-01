@@ -154,7 +154,7 @@ func Test_blogService_FindBlogs(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			tc.arrange()
 
-			blogs, err := blogService.FindBlogs()
+			blogs, err := blogService.FindStories()
 
 			tc.assert(t, blogs, err)
 		})

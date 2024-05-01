@@ -9,7 +9,7 @@ import (
 type StoryService interface {
 	Create(payload models.StoryPayload) (*uint, error)
 	FindById(id uint) (*models.Story, error)
-	FindBlogs() ([]*models.Story, error)
+	FindStories() ([]*models.Story, error)
 	DeleteById(id uint) error
 	Update(id uint, payload models.StoryPayload) error
 }
@@ -36,7 +36,7 @@ func (s *storyService) FindById(id uint) (*models.Story, error) {
 	return s.repo.FindById(id)
 }
 
-func (s *storyService) FindBlogs() ([]*models.Story, error) {
+func (s *storyService) FindStories() ([]*models.Story, error) {
 	return s.repo.FindBlogs()
 }
 
