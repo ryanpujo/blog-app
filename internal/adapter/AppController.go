@@ -3,6 +3,6 @@ package adapter
 import "github.com/ryanpujo/blog-app/internal/controllers"
 
 type AppController struct {
-	UserController controllers.UserController
-	BlogController controllers.BlogController
+	UserController  controllers.UserController
+	StoryController controllers.StoryController
 }

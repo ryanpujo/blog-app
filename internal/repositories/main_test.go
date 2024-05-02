@@ -40,7 +40,7 @@ func TestMain(m *testing.M) {
 
 	// Initialize repositories.
 	userRepo = repositories.NewUserRepository(testDB)
-	blogRepo = repositories.NewBlogRepository(testDB)
+	blogRepo = repositories.NewStoryRepository(testDB)
 
 	// Run the tests.
 	code := m.Run()

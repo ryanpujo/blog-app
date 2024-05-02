@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	lorem "github.com/derektata/lorem/ipsum"
 	"github.com/gin-gonic/gin"
 	_ "github.com/jackc/pgx/v5"
 	_ "github.com/jackc/pgx/v5/pgconn"
@@ -31,6 +32,8 @@ var (
 	testDB *sql.DB
 	mux    *gin.Engine
 )
+
+var loremGenerator *lorem.Generator
 
 // TestMain sets up the test environment using Docker to run a PostgreSQL container.
 // It ensures that Docker is running, starts a new PostgreSQL container, and establishes a connection to it.
@@ -87,6 +90,7 @@ func TestMain(m *testing.M) {
 	registry := registry.New(testDB)
 	appController := registry.NewAppController()
 	mux = route.Route(appController)
+	loremGenerator = lorem.NewGenerator()
 	// Run the tests.
 	code := m.Run()
 

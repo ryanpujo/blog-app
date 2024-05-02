@@ -11,21 +11,21 @@ import (
 )
 
 var (
-	mockService     *MockUserService
-	mockBlogService *MockBlogService
-	mux             *gin.Engine
+	mockService      *MockUserService
+	mockStoryService *MockBlogService
+	mux              *gin.Engine
 )
 
 func TestMain(m *testing.M) {
 	mockService = new(MockUserService)
 	userController := controllers.NewUserController(mockService)
 
-	mockBlogService = new(MockBlogService)
-	blogContorller := controllers.NewBlogController(mockBlogService)
+	mockStoryService = new(MockBlogService)
+	storyController := controllers.NewStoryController(mockStoryService)
 
 	adapter := adapter.AppController{
-		UserController: userController,
-		BlogController: blogContorller,
+		UserController:  userController,
+		StoryController: storyController,
 	}
 	mux = route.Route(adapter)
 	os.Exit(m.Run())

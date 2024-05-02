@@ -23,13 +23,13 @@ func (ss StoryStatus) String() string {
 
 // StoryPayload represents the structure of a story resource and includes validation tags for Gin binding.
 type StoryPayload struct {
-	ID          uint        `json:"id" binding:"required"`            // Unique identifier for the story
+	ID          uint        `json:"id"`                               // Unique identifier for the story
 	Title       string      `json:"title" binding:"required,max=255"` // Title of the story
 	Content     string      `json:"content" binding:"required"`       // Content of the story
-	AuthorID    uint        `json:"author_id" binding:"required"`     // Unique identifier for the author
+	AuthorID    uint        `json:"author_id"`                        // Unique identifier for the author
 	Slug        string      `json:"slug" binding:"required,max=255"`  // URL-friendly version of the story title
 	Excerpt     *string     `json:"excerpt,omitempty"`                // Short summary of the story
-	Status      StoryStatus `json:"status" binding:"required"`        // Status of the story
+	Status      StoryStatus `json:"status" default:"1"`               // Status of the story
 	PublishedAt *time.Time  `json:"published_at,omitempty"`           // Date and time when the story was published
 	Type        StoryType   `json:"type" binding:"required"`          // Type of the story
 	WordCount   uint        `json:"word_count"`                       // Word count of the story
@@ -104,6 +104,24 @@ type StoryError struct {
 }
 
 // Error implements the error interface.
-func (e *StoryError) Error() string {
+func (e StoryError) Error() string {
 	return fmt.Sprintf("story error: %s (story type: %s, word count: %d)", e.Message, e.StoryType, e.WordCount)
+}
+
+func (e StoryError) Is(target error) bool {
+	err, ok := target.(StoryError)
+	if !ok {
+		return false
+	}
+	return e.StoryType == err.StoryType
+}
+
+// As implements the As method for the error interface.
+func (e *StoryError) As(target interface{}) bool {
+	t, ok := target.(*StoryError)
+	if !ok {
+		return false
+	}
+	*t = *e
+	return true
 }

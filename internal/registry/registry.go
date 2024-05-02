@@ -18,6 +18,7 @@ func New(db *sql.DB) registry {
 
 func (r registry) NewAppController() adapter.AppController {
 	return adapter.AppController{
-		UserController: r.NewUserController(),
+		UserController:  r.NewUserController(),
+		StoryController: r.NewStoryController(),
 	}
 }

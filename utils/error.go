@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/ryanpujo/blog-app/internal/response"
+	"github.com/ryanpujo/blog-app/models"
 )
 
 var (
@@ -28,6 +29,8 @@ func GetValidationErrorMessage(vErr validator.ValidationErrors) string {
 		errMessage = fmt.Sprintf("The %s field must be a valid email address", vErr[0].Field())
 	case "gt":
 		errMessage = fmt.Sprintf("The %s field must be grater than %s", vErr[0].Field(), vErr[0].Param())
+	case "required":
+		errMessage = fmt.Sprintf("The %s field is %s", vErr[0].Field(), vErr[0].Tag())
 	}
 
 	return errMessage
@@ -39,6 +42,7 @@ func HandleRequestError(c *gin.Context, err error) {
 	// Determine the type of error and respond accordingly
 	var validationErrs validator.ValidationErrors
 	var DBerr DBError
+	var storyErr models.StoryError
 	if errors.As(err, &validationErrs) {
 		// Handle validation errors
 		c.AbortWithStatusJSON(http.StatusBadRequest, response.NewErrorResponse(GetValidationErrorMessage(validationErrs)))
@@ -47,6 +51,8 @@ func HandleRequestError(c *gin.Context, err error) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, response.NewErrorResponse(DBerr.Message))
 	} else if errors.Is(err, sql.ErrNoRows) {
 		c.AbortWithStatusJSON(http.StatusNotFound, response.NewErrorResponse("data not found"))
+	} else if errors.As(err, &storyErr) {
+		c.AbortWithStatusJSON(http.StatusBadRequest, response.NewErrorResponse(storyErr.Message))
 	} else {
 		// Handle other types of errors
 		c.AbortWithStatusJSON(http.StatusBadRequest, response.NewErrorResponse("An unexpected error occurred"))
