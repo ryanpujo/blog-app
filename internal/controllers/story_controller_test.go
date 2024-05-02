@@ -47,20 +47,18 @@ const storyBaseRoute = "/api/story"
 var excerpt = "test excerpt"
 
 var storyPayload = models.StoryPayload{
-	Title:    "test title",
-	Content:  "test content",
-	AuthorID: 1,
-	Slug:     "test-title",
-	Excerpt:  &excerpt,
-	Type:     models.Novelette,
+	Title:   "test title",
+	Content: "test content",
+	Slug:    "test-title",
+	Excerpt: &excerpt,
+	Type:    models.Novelette,
 }
 
 var storyBadPayload = models.StoryPayload{
-	Title:    "test title",
-	AuthorID: 1,
-	Slug:     "test-title",
-	Excerpt:  &excerpt,
-	Type:     models.Novelette,
+	Title:   "test title",
+	Slug:    "test-title",
+	Excerpt: &excerpt,
+	Type:    models.Novelette,
 }
 
 var storyTest = models.Story{
@@ -74,11 +72,13 @@ func Test_Create_Story(t *testing.T) {
 	payload, _ := json.Marshal(storyPayload)
 	badStoryPayload, _ := json.Marshal(storyBadPayload)
 	testTbale := map[string]struct {
+		uri     string
 		json    []byte
 		arrange func()
 		assert  func(t *testing.T, statusCode int, json *response.Response)
 	}{
 		"success": {
+			uri:  "/create/1",
 			json: payload,
 			arrange: func() {
 				mockStoryService.On("Create", mock.Anything).Return(&successRet, nil).Once()
@@ -91,6 +91,7 @@ func Test_Create_Story(t *testing.T) {
 			},
 		},
 		"failed": {
+			uri:  "/create/2",
 			json: payload,
 			arrange: func() {
 				mockStoryService.On("Create", mock.Anything).Return((*uint)(nil), errors.New("failed")).Once()
@@ -103,6 +104,7 @@ func Test_Create_Story(t *testing.T) {
 			},
 		},
 		"validation failed": {
+			uri:     "/create/1",
 			json:    badStoryPayload,
 			arrange: func() {},
 			assert: func(t *testing.T, statusCode int, json *response.Response) {
@@ -111,13 +113,23 @@ func Test_Create_Story(t *testing.T) {
 				require.Equal(t, "The Content field is required", json.Message)
 			},
 		},
+		"uri failed": {
+			uri:     "/create/0",
+			json:    payload,
+			arrange: func() {},
+			assert: func(t *testing.T, statusCode int, json *response.Response) {
+				require.Equal(t, http.StatusBadRequest, statusCode)
+				require.Nil(t, json.Data)
+				require.Equal(t, "The ID field must be grater than 0", json.Message)
+			},
+		},
 	}
 
 	for name, tc := range testTbale {
 		t.Run(name, func(t *testing.T) {
 			tc.arrange()
 
-			res, code, err := test.NewHttpTest(http.MethodPost, "/create", test.WithBaseUri(storyBaseRoute), test.WithJson(tc.json)).
+			res, code, err := test.NewHttpTest(http.MethodPost, tc.uri, test.WithBaseUri(storyBaseRoute), test.WithJson(tc.json)).
 				ExecuteTest(mux)
 			require.NoError(t, err)
 
@@ -160,7 +172,7 @@ func Test_Find_Story(t *testing.T) {
 			assert: func(t *testing.T, statusCode int, json *response.Response) {
 				require.Equal(t, http.StatusBadRequest, statusCode)
 				require.Nil(t, json.Data)
-				require.Equal(t, "The ID field must be grater than 0", json.Message)
+				require.Equal(t, "The StoryID field must be grater than 0", json.Message)
 			},
 		},
 	}
@@ -224,7 +236,7 @@ func Test_Update_Story(t *testing.T) {
 		assert  func(t *testing.T, statusCode int, res *response.Response)
 	}{
 		"success": {
-			uri:  "/1",
+			uri:  "/1/user/1",
 			json: payload,
 			arrange: func() {
 				mockStoryService.On("Update", mock.Anything, mock.Anything).Return(nil).Once()
@@ -235,7 +247,7 @@ func Test_Update_Story(t *testing.T) {
 			},
 		},
 		"failed": {
-			uri:  "/1",
+			uri:  "/1/user/1",
 			json: payload,
 			arrange: func() {
 				mockStoryService.On("Update", mock.Anything, mock.Anything).Return(errors.New("failed")).Once()
@@ -246,8 +258,19 @@ func Test_Update_Story(t *testing.T) {
 				require.Equal(t, "An unexpected error occurred", res.Message)
 			},
 		},
-		"uri failed": {
-			uri:  "/0",
+		"story uri failed": {
+			uri:  "/0/user/1",
+			json: payload,
+			arrange: func() {
+			},
+			assert: func(t *testing.T, statusCode int, res *response.Response) {
+				require.Equal(t, http.StatusBadRequest, statusCode)
+				require.NotNil(t, res)
+				require.Equal(t, "The StoryID field must be grater than 0", res.Message)
+			},
+		},
+		"user uri failed": {
+			uri:  "/1/user/0",
 			json: payload,
 			arrange: func() {
 			},
@@ -258,7 +281,7 @@ func Test_Update_Story(t *testing.T) {
 			},
 		},
 		"json failed": {
-			uri:  "/1",
+			uri:  "/1/user/1",
 			json: badStoryPayload,
 			arrange: func() {
 			},
@@ -317,7 +340,7 @@ func Test_Delete_Story(t *testing.T) {
 			assert: func(t *testing.T, statusCode int, res *response.Response) {
 				require.Equal(t, http.StatusBadRequest, statusCode)
 				require.NotNil(t, res)
-				require.Equal(t, "The ID field must be grater than 0", res.Message)
+				require.Equal(t, "The StoryID field must be grater than 0", res.Message)
 			},
 		},
 	}

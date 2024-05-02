@@ -26,7 +26,7 @@ type StoryPayload struct {
 	ID          uint        `json:"id"`                               // Unique identifier for the story
 	Title       string      `json:"title" binding:"required,max=255"` // Title of the story
 	Content     string      `json:"content" binding:"required"`       // Content of the story
-	AuthorID    uint        `json:"author_id" binding:"required"`     // Unique identifier for the author
+	AuthorID    uint        `json:"author_id"`                        // Unique identifier for the author
 	Slug        string      `json:"slug" binding:"required,max=255"`  // URL-friendly version of the story title
 	Excerpt     *string     `json:"excerpt,omitempty"`                // Short summary of the story
 	Status      StoryStatus `json:"status" default:"1"`               // Status of the story

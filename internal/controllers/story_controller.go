@@ -35,6 +35,7 @@ func NewStoryController(s services.StoryService) *storyController {
 func (s *storyController) Create(c *gin.Context) {
 	// Define a variable to hold the story payload
 	var payload models.StoryPayload
+	var uri models.Uri
 
 	// Attempt to bind the request body to the payload struct
 	if err := c.ShouldBindJSON(&payload); err != nil {
@@ -42,6 +43,11 @@ func (s *storyController) Create(c *gin.Context) {
 		return
 	}
 
+	if err := c.ShouldBindUri(&uri); err != nil {
+		utils.HandleRequestError(c, err)
+		return
+	}
+	payload.AuthorID = uri.ID
 	// Call the service layer to create the story
 	id, err := s.service.Create(payload)
 	if err != nil {
@@ -55,14 +61,14 @@ func (s *storyController) Create(c *gin.Context) {
 }
 
 func (s *storyController) FindById(c *gin.Context) {
-	var uri models.Uri
+	var uri models.StoryUri
 
 	if err := c.ShouldBindUri(&uri); err != nil {
 		utils.HandleRequestError(c, err)
 		return
 	}
 
-	story, err := s.service.FindById(uri.ID)
+	story, err := s.service.FindById(uri.StoryID)
 	if err != nil {
 		utils.HandleRequestError(c, err)
 		return
@@ -83,9 +89,15 @@ func (s *storyController) FindStories(c *gin.Context) {
 
 func (s *storyController) Update(c *gin.Context) {
 	var uri models.Uri
+	var storyUri models.StoryUri
 	var payload models.StoryPayload
 
 	if err := c.ShouldBindUri(&uri); err != nil {
+		utils.HandleRequestError(c, err)
+		return
+	}
+
+	if err := c.ShouldBindUri(&storyUri); err != nil {
 		utils.HandleRequestError(c, err)
 		return
 	}
@@ -94,8 +106,8 @@ func (s *storyController) Update(c *gin.Context) {
 		utils.HandleRequestError(c, err)
 		return
 	}
-
-	err := s.service.Update(uri.ID, payload)
+	payload.AuthorID = uri.ID
+	err := s.service.Update(storyUri.StoryID, payload)
 	if err != nil {
 		utils.HandleRequestError(c, err)
 		return
@@ -105,13 +117,13 @@ func (s *storyController) Update(c *gin.Context) {
 }
 
 func (s *storyController) DeleteById(c *gin.Context) {
-	var uri models.Uri
+	var uri models.StoryUri
 	if err := c.ShouldBindUri(&uri); err != nil {
 		utils.HandleRequestError(c, err)
 		return
 	}
 
-	if err := s.service.DeleteById(uri.ID); err != nil {
+	if err := s.service.DeleteById(uri.StoryID); err != nil {
 		utils.HandleRequestError(c, err)
 	}
 
