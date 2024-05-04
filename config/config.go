@@ -2,11 +2,17 @@ package config
 
 import "github.com/spf13/viper"
 
+type jwtConfig struct {
+	RefreshTokenSecret string `mapstructure:"REFRESH_TOKEN_SECRET"`
+	AccessTokenSecret  string `mapstructure:"ACCES_TOKEN_SECRET"`
+}
+
 // config defines the structure for the application configuration.
 // It includes the server port and the data source name (DSN) for database connection.
 type config struct {
-	PORT int    `mapstructure:"port"` // PORT defines the port on which the server should run.
-	DSN  string `mapstructure:"dsn"`  // DSN is the Data Source Name for the database connection.
+	PORT int       `mapstructure:"port"` // PORT defines the port on which the server should run.
+	DSN  string    `mapstructure:"dsn"`  // DSN is the Data Source Name for the database connection.
+	JWT  jwtConfig `mapstructure:"JWT"`
 }
 
 // cfg holds the application configuration loaded from the config file.
