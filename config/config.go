@@ -1,6 +1,15 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"time"
+
+	"github.com/spf13/viper"
+)
+
+const (
+	RefreshTokenExpiration = time.Hour * 24 * 7
+	AccessTokenExpiration  = time.Minute * 10
+)
 
 type jwtConfig struct {
 	RefreshTokenSecret string `mapstructure:"REFRESH_TOKEN_SECRET"`
