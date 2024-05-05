@@ -49,6 +49,8 @@ func (_m *MockUserRepository) CheckIfEmailOrUsernameExist(email, username string
 	return ret.Bool(0)
 }
 
+var hash = utils.HashPassword
+
 // Test_userService_Create tests the Create method of userService
 func Test_userService_Create(t *testing.T) {
 	succesRet := uint(1)
@@ -62,7 +64,6 @@ func Test_userService_Create(t *testing.T) {
 			arrange: func() {
 				// Arrange for a successful creation by setting up the mock expectations
 				mockRepo.On("Create", mock.Anything).Return(&succesRet, nil).Once()
-				utils.HashPassword = utils.EncryptPassword
 				mockRepo.On("CheckIfEmailOrUsernameExist", mock.Anything, mock.Anything).Return(false).Once()
 			},
 			assert: func(t *testing.T, actualID *uint, err error) {
@@ -87,6 +88,7 @@ func Test_userService_Create(t *testing.T) {
 				require.Equal(t, "hash password", err.Error())
 				require.Zero(t, actualID)
 				mockRepo.AssertNotCalled(t, "Create")
+				utils.HashPassword = hash
 			},
 		},
 		// Subtest for failed user creation
@@ -94,7 +96,6 @@ func Test_userService_Create(t *testing.T) {
 			arrange: func() {
 				// Arrange for a failed creation by setting up the mock expectations
 				mockRepo.On("Create", mock.Anything).Return((*uint)(nil), errors.New("failed to create")).Once()
-				utils.HashPassword = utils.EncryptPassword
 				mockRepo.On("CheckIfEmailOrUsernameExist", mock.Anything, mock.Anything).Return(false).Once()
 			},
 			assert: func(t *testing.T, actualID *uint, err error) {
