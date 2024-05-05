@@ -18,14 +18,14 @@ type jwtConfig struct {
 
 // config defines the structure for the application configuration.
 // It includes the server port and the data source name (DSN) for database connection.
-type config struct {
+type configuration struct {
 	PORT int       `mapstructure:"port"` // PORT defines the port on which the server should run.
 	DSN  string    `mapstructure:"dsn"`  // DSN is the Data Source Name for the database connection.
 	JWT  jwtConfig `mapstructure:"JWT"`
 }
 
 // cfg holds the application configuration loaded from the config file.
-var cfg config
+var cfg configuration
 
 // loadConfig reads the configuration from a YAML file and unmarshals it into the cfg variable.
 // It looks for the configuration file named "config" with a ".yaml" extension in the current directory
@@ -48,11 +48,13 @@ func loadConfig() {
 	}
 }
 
+var Config = config
+
 // Config returns the application configuration.
 // It ensures that the configuration is loaded before returning it.
 // If the configuration has not been loaded yet (indicated by an empty DSN or PORT),
 // it calls loadConfig to load the configuration.
-func Config() config {
+func config() configuration {
 	if cfg.DSN == "" || cfg.PORT == 0 {
 		loadConfig() // Loads the configuration if it's not already loaded.
 	}
