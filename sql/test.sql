@@ -10,18 +10,12 @@ CREATE TABLE public.users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('John', 'Doe', 'johndoe', 'password123', 'john.doe@example.com');
--- INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Jane', 'Smith', 'janesmith', 'password123', 'jane.smith@example.com');
--- INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Emily', 'Johnson', 'emilyj', 'password123', 'emily.johnson@example.com');
--- INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Michael', 'Brown', 'michaelb', 'password123', 'michael.brown@example.com');
--- INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('David', 'Williams', 'davidw', 'password123', 'david.williams@example.com');
--- INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Sarah', 'Miller', 'sarahm', 'password123', 'sarah.miller@example.com');
--- INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Daniel', 'Davis', 'danield', 'password123', 'daniel.davis@example.com');
--- INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Jessica', 'Garcia', 'jessicag', 'password123', 'jessica.garcia@example.com');
--- INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('William', 'Martinez', 'williamm', 'password123', 'william.martinez@example.com');
--- INSERT INTO public.users (first_name, last_name, username, password, email) VALUES ('Laura', 'Hernandez', 'laurah', 'password123', 'laura.hernandez@example.com');
-
-
+CREATE TABLE tokens (
+    token_hash VARCHAR NOT NULL,
+    user_id INTEGER NOT NULL CHECK (user_id > 0),
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    revoked BOOLEAN NOT NULL DEFAULT FALSE
+);
 
 -- Roles table
 CREATE TABLE public.roles (
