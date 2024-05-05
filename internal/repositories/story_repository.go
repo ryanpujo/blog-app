@@ -2,9 +2,9 @@ package repositories
 
 import (
 	"context"
-	"database/sql"
 	"time"
 
+	"github.com/ryanpujo/blog-app/database"
 	"github.com/ryanpujo/blog-app/models"
 	"github.com/ryanpujo/blog-app/utils"
 )
@@ -18,10 +18,10 @@ type StoryRepository interface {
 }
 
 type storyRepository struct {
-	Db *sql.DB
+	Db database.DatabaseOperations
 }
 
-func NewStoryRepository(db *sql.DB) *storyRepository {
+func NewStoryRepository(db database.DatabaseOperations) *storyRepository {
 	return &storyRepository{
 		Db: db,
 	}
