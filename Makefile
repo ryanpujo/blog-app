@@ -47,6 +47,14 @@ controller_test:
 	cd internal/controllers && go test . --coverprofile=cover.out
 	@echo "finished running all test"
 
+auth_test:
+	@echo "running test for user controller"
+	cd ./auth && go test . --coverprofile=cover.out
+	@echo "finished running all test"
+
+show_auth:
+	cd ./auth && go tool cover -html=cover.out
+
 show_repo:
 	cd internal/repositories && go tool cover -html=cover.out
 
@@ -59,4 +67,4 @@ show_controller:
 show_integration:
 	cd test/integration && go tool cover -html=cover.out
 
-all_test: repo_test  controller_test service_test integration_test
+all_test: repo_test  controller_test service_test auth_test integration_test

@@ -1,2 +1,6 @@
 PORT: 5432
 DSN: postgres://postgres:postgres@postgres:5432/blog-app
+
+JWT:
+  REFRESH_TOKEN_SECRET: d824cf1fed261e02aa3e2bf0b8f1329bf6b764a0ac77c0c392a7394bfd9cbeaf
+  ACCES_TOKEN_SECRET: 615b7b182524c611848d6f428f68d2aa3383810124cf721bd16006a0b5270a3d
