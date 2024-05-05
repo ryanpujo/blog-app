@@ -11,21 +11,21 @@ const (
 	AccessTokenExpiration  = time.Minute * 10
 )
 
-type jwtConfig struct {
+type JWTConfig struct {
 	RefreshTokenSecret string `mapstructure:"REFRESH_TOKEN_SECRET"`
 	AccessTokenSecret  string `mapstructure:"ACCES_TOKEN_SECRET"`
 }
 
 // config defines the structure for the application configuration.
 // It includes the server port and the data source name (DSN) for database connection.
-type configuration struct {
+type Configuration struct {
 	PORT int       `mapstructure:"port"` // PORT defines the port on which the server should run.
 	DSN  string    `mapstructure:"dsn"`  // DSN is the Data Source Name for the database connection.
-	JWT  jwtConfig `mapstructure:"JWT"`
+	JWT  JWTConfig `mapstructure:"JWT"`
 }
 
 // cfg holds the application configuration loaded from the config file.
-var cfg configuration
+var cfg Configuration
 
 // loadConfig reads the configuration from a YAML file and unmarshals it into the cfg variable.
 // It looks for the configuration file named "config" with a ".yaml" extension in the current directory
@@ -54,7 +54,7 @@ var Config = config
 // It ensures that the configuration is loaded before returning it.
 // If the configuration has not been loaded yet (indicated by an empty DSN or PORT),
 // it calls loadConfig to load the configuration.
-func config() configuration {
+func config() Configuration {
 	if cfg.DSN == "" || cfg.PORT == 0 {
 		loadConfig() // Loads the configuration if it's not already loaded.
 	}
