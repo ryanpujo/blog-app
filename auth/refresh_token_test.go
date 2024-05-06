@@ -32,7 +32,7 @@ func Test_Save_Token(t *testing.T) {
 			},
 			assert: func(t *testing.T, err error) {
 				require.Error(t, err)
-				require.Equal(t, "failed", err.Error())
+				require.Equal(t, "failed to save token: failed", err.Error())
 			},
 		},
 	}

@@ -21,7 +21,7 @@ var (
 
 	testDB                *sql.DB
 	SQLMock               sqlmock.Sqlmock
-	rTokenRepo            auth.TokenRepository
+	rTokenRepo            auth.TokenSaver
 	repoMock              = new(RepoMock)
 	refreshTokenGenerator auth.TokenGenerator
 )
@@ -33,7 +33,7 @@ func TestMain(m *testing.M) {
 		log.Fatalf("failed create mock db: %s", err)
 	}
 	rTokenRepo = auth.NewRefreshToken(testDB)
-	refreshTokenGenerator = auth.NewRefreshTokenGenerator("lejjfelkjrrlekjssrjlejr", repoMock)
+	refreshTokenGenerator = auth.NewTokenGenerator("lejjfelkjrrlekjssrjlejr", repoMock, time.Now().Add(time.Minute*60))
 	defer testDB.Close()
 
 	os.Exit(m.Run())

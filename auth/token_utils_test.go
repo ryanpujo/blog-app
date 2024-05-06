@@ -8,7 +8,6 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/ryanpujo/blog-app/auth"
-	"github.com/ryanpujo/blog-app/utils"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -22,10 +21,7 @@ func (m *RepoMock) SaveToken(ctx context.Context, t auth.Token) error {
 	return arg.Error(0)
 }
 
-var (
-	HMAC      = auth.HMACMethod
-	bcrypHash = utils.HashPassword
-)
+var HMAC = auth.HMACMethod
 
 func Test_Generate_RefreshToken(t *testing.T) {
 	testTable := map[string]struct {
@@ -35,7 +31,7 @@ func Test_Generate_RefreshToken(t *testing.T) {
 	}{
 		"success": {
 			arrange: func() {
-				repoMock.On("SaveToken", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+				repoMock.On("SaveToken", mock.Anything, mock.Anything).Return(nil).Once()
 			},
 			assert: func(t *testing.T, actual *string, err error) {
 				require.NoError(t, err)
@@ -54,34 +50,20 @@ func Test_Generate_RefreshToken(t *testing.T) {
 			assert: func(t *testing.T, actual *string, err error) {
 				require.Error(t, err)
 				require.Nil(t, actual)
+				require.Equal(t, "failed to sign token: the requested hash function is unavailable", err.Error())
 			},
 			tearDown: func() {
 				auth.HMACMethod = HMAC
 			},
 		},
-		"failed bcrypt": {
-			arrange: func() {
-				utils.HashPassword = func(plain string) (string, error) {
-					return "", errors.New("failed")
-				}
-			},
-			assert: func(t *testing.T, actual *string, err error) {
-				require.Error(t, err)
-				require.Nil(t, actual)
-				require.Equal(t, "failed", err.Error())
-			},
-			tearDown: func() {
-				utils.HashPassword = bcrypHash
-			},
-		},
 		"failed to save": {
 			arrange: func() {
-				repoMock.On("SaveToken", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("failed to save")).Once()
+				repoMock.On("SaveToken", mock.Anything, mock.Anything).Return(errors.New("failed to save")).Once()
 			},
 			assert: func(t *testing.T, actual *string, err error) {
 				require.Error(t, err)
 				require.Nil(t, actual)
-				require.Equal(t, "failed to save", err.Error())
+				require.Equal(t, "failed to save token: failed to save", err.Error())
 			},
 			tearDown: func() {
 			},

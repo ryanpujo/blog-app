@@ -4,7 +4,7 @@ import (
 	"context"
 )
 
-type TokenRepository interface {
+type TokenSaver interface {
 	SaveToken(ctx context.Context, t Token) error
 }
 

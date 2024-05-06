@@ -37,26 +37,6 @@ func initDB() (*sql.DB, error) {
 	return db, nil
 }
 
-// type ExecContext interface {
-// 	ExecContext(context.Context, string, ...any) (sql.Result, error)
-// }
-
-// type QueryContext interface {
-// 	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
-// }
-
-// type QueryRowContext interface {
-// 	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
-// }
-
-// type DatabaseOperations interface {
-// 	ExecContext
-// 	QueryContext
-// 	QueryRowContext
-// }
-
-// type DatabaseFunc func() DatabaseOperations
-
 var EstablishDBConnectionWithRetry = establishDBConnectionWithRetry
 
 // EstablishDBConnectionWithRetry attempts to establish a database connection with retries.
