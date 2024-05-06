@@ -2,17 +2,17 @@ package repositories
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"time"
 
-	"github.com/ryanpujo/blog-app/database"
 	"github.com/ryanpujo/blog-app/models"
 	"github.com/ryanpujo/blog-app/utils"
 )
 
 // userRepository implements the UserRepository interface for operations on the users table.
 type userRepository struct {
-	db database.DatabaseOperations
+	db *sql.DB
 }
 
 // UserRepository defines the interface for user repository operations.
@@ -27,7 +27,7 @@ type UserRepository interface {
 
 // NewUserRepository creates a new instance of a userRepository.
 // It requires a database connection object (*sql.DB) to perform operations.
-func NewUserRepository(db database.DatabaseOperations) *userRepository {
+func NewUserRepository(db *sql.DB) *userRepository {
 	return &userRepository{db: db}
 }
 

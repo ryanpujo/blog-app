@@ -10,7 +10,7 @@ CREATE TABLE public.users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE tokens (
+CREATE TABLE refresh_tokens (
     token_hash VARCHAR NOT NULL,
     user_id INTEGER NOT NULL CHECK (user_id > 0),
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,

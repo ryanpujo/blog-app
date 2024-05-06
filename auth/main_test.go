@@ -13,14 +13,17 @@ import (
 )
 
 var (
-	refreshToken = auth.RefreshToken{
+	refreshToken = auth.Token{
 		TokenHash: "slkfekfne",
 		UserID:    1,
 		ExpiresAt: time.Now().Add(config.RefreshTokenExpiration),
 	}
 
-	testDB  *sql.DB
-	SQLMock sqlmock.Sqlmock
+	testDB                *sql.DB
+	SQLMock               sqlmock.Sqlmock
+	rTokenRepo            auth.TokenRepository
+	repoMock              = new(RepoMock)
+	refreshTokenGenerator auth.TokenGenerator
 )
 
 func TestMain(m *testing.M) {
@@ -29,6 +32,8 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("failed create mock db: %s", err)
 	}
+	rTokenRepo = auth.NewRefreshToken(testDB)
+	refreshTokenGenerator = auth.NewRefreshTokenGenerator("lejjfelkjrrlekjssrjlejr", repoMock)
 	defer testDB.Close()
 
 	os.Exit(m.Run())

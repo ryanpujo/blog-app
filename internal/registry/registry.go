@@ -1,15 +1,16 @@
 package registry
 
 import (
-	"github.com/ryanpujo/blog-app/database"
+	"database/sql"
+
 	"github.com/ryanpujo/blog-app/internal/adapter"
 )
 
 type registry struct {
-	DB database.DatabaseOperations
+	DB *sql.DB
 }
 
-func New(db database.DatabaseOperations) registry {
+func New(db *sql.DB) registry {
 	return registry{
 		DB: db,
 	}

@@ -1,6 +1,7 @@
 package auth_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -15,7 +16,7 @@ func Test_Save_Token(t *testing.T) {
 	}{
 		"success": {
 			arrange: func() {
-				SQLMock.ExpectExec("INSERT INTO tokens").
+				SQLMock.ExpectExec("INSERT INTO refresh_tokens").
 					WithArgs(refreshToken.TokenHash, refreshToken.UserID, refreshToken.ExpiresAt).
 					WillReturnResult(sqlmock.NewResult(1, 1))
 			},
@@ -25,7 +26,7 @@ func Test_Save_Token(t *testing.T) {
 		},
 		"failed": {
 			arrange: func() {
-				SQLMock.ExpectExec("INSERT INTO tokens").
+				SQLMock.ExpectExec("INSERT INTO refresh_tokens").
 					WithArgs(refreshToken.TokenHash, refreshToken.UserID, refreshToken.ExpiresAt).
 					WillReturnError(errors.New("failed"))
 			},
@@ -40,7 +41,7 @@ func Test_Save_Token(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			tc.arrange()
 
-			err := refreshToken.SaveToken(testDB)
+			err := rTokenRepo.SaveToken(context.Background(), refreshToken)
 
 			tc.assert(t, err)
 		})

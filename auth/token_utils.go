@@ -3,12 +3,10 @@ package auth
 import (
 	"crypto"
 	"crypto/sha256"
-	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/ryanpujo/blog-app/config"
-	"github.com/ryanpujo/blog-app/database"
 	"github.com/ryanpujo/blog-app/utils"
 )
 
@@ -22,10 +20,22 @@ var HMACMethod = &jwt.SigningMethodHMAC{
 	Hash: crypto.SHA256,
 }
 
-func GenerateRefreshToken(userID uint) (*string, error) {
-	cfg := config.Config()
+type refreshTokenGenerator struct {
+	secret string
+	repo   TokenRepository
+}
+
+func NewRefreshTokenGenerator(secret string, repo TokenRepository) refreshTokenGenerator {
+	return refreshTokenGenerator{
+		secret: secret,
+		repo:   repo,
+	}
+}
+
+func (r refreshTokenGenerator) GenerateToken(userID uint) (*string, error) {
+
 	expiresAt := time.Now().Add(config.RefreshTokenExpiration)
-	claim := UserClaims{
+	claims := UserClaims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: &jwt.NumericDate{
@@ -33,9 +43,10 @@ func GenerateRefreshToken(userID uint) (*string, error) {
 			},
 		},
 	}
-	token := jwt.NewWithClaims(HMACMethod, claim)
 
-	tokenString, err := token.SignedString([]byte(cfg.JWT.RefreshTokenSecret))
+	token := jwt.NewWithClaims(HMACMethod, claims)
+
+	tokenString, err := token.SignedString([]byte(r.secret))
 	if err != nil {
 		return nil, err
 	}
@@ -44,17 +55,16 @@ func GenerateRefreshToken(userID uint) (*string, error) {
 
 	hash, err := utils.HashPassword(string(sha256[:]))
 	if err != nil {
-		log.Println("disini woyyyyy", err.Error())
 		return nil, err
 	}
 
-	refreshToken := RefreshToken{
+	refreshToken := Token{
 		TokenHash: hash,
 		UserID:    userID,
 		ExpiresAt: expiresAt,
 	}
 
-	err = refreshToken.SaveToken(database.EstablishDBConnectionWithRetry())
+	err = refreshToken.SaveToken(r.repo)
 	if err != nil {
 		return nil, err
 	}

@@ -1,7 +1,6 @@
 package database
 
 import (
-	"context"
 	"database/sql"
 	"log"
 	"time"
@@ -38,32 +37,32 @@ func initDB() (*sql.DB, error) {
 	return db, nil
 }
 
-type ExecContext interface {
-	ExecContext(context.Context, string, ...any) (sql.Result, error)
-}
+// type ExecContext interface {
+// 	ExecContext(context.Context, string, ...any) (sql.Result, error)
+// }
 
-type QueryContext interface {
-	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
-}
+// type QueryContext interface {
+// 	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
+// }
 
-type QueryRowContext interface {
-	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
-}
+// type QueryRowContext interface {
+// 	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
+// }
 
-type DatabaseOperations interface {
-	ExecContext
-	QueryContext
-	QueryRowContext
-}
+// type DatabaseOperations interface {
+// 	ExecContext
+// 	QueryContext
+// 	QueryRowContext
+// }
 
-type DatabaseFunc func() DatabaseOperations
+// type DatabaseFunc func() DatabaseOperations
 
-var EstablishDBConnectionWithRetry DatabaseFunc = establishDBConnectionWithRetry
+var EstablishDBConnectionWithRetry = establishDBConnectionWithRetry
 
 // EstablishDBConnectionWithRetry attempts to establish a database connection with retries.
 // It uses a ticker to retry the connection every 2 seconds and will log a fatal error
 // if the connection cannot be established after 5 attempts.
-func establishDBConnectionWithRetry() DatabaseOperations {
+func establishDBConnectionWithRetry() *sql.DB {
 	// Create a new ticker that triggers every 2 seconds.
 	ticker := time.NewTicker(2 * time.Second)
 	// Ensure the ticker is stopped to free resources.
