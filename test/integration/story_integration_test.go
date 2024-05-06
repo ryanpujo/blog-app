@@ -101,14 +101,12 @@ func Test_Create_Story(t *testing.T) {
 		},
 	}
 
-	for name, tc := range testTbale {
-		t.Run(name, func(t *testing.T) {
-			res, code, err := test.NewHttpTest(http.MethodPost, tc.uri, test.WithBaseUri(storyBaseRoute), test.WithJson(tc.json)).
-				ExecuteTest(mux)
-			require.NoError(t, err)
+	for _, tc := range testTbale {
+		res, code, err := test.NewHttpTest(http.MethodPost, tc.uri, test.WithBaseUri(storyBaseRoute), test.WithJson(tc.json)).
+			ExecuteTest(mux)
+		require.NoError(t, err)
 
-			tc.assert(t, code, res)
-		})
+		tc.assert(t, code, res)
 	}
 }
 func Test_Find_Story(t *testing.T) {

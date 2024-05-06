@@ -79,6 +79,7 @@ func TestMain(m *testing.M) {
 		pool.Purge(resource)
 		log.Fatalf("Failed to connect to PostgreSQL: %s", err)
 	}
+	defer testDB.Close()
 
 	// Create tables in the test database.
 	if err := createTables(); err != nil {
