@@ -42,7 +42,8 @@ type StoryType int
 
 // Constants for StoryType.
 const (
-	FlashFiction StoryType = iota
+	_ StoryType = iota
+	FlashFiction
 	ShortStory
 	Novelette
 	Novella
@@ -50,7 +51,7 @@ const (
 
 // String returns the string representation of the StoryType.
 func (st StoryType) String() string {
-	return [...]string{"flash_fiction", "short_story", "novelette", "novella"}[st]
+	return [...]string{"", "flash_fiction", "short_story", "novelette", "novella"}[st]
 }
 
 // Story represents the structure of a story resource.
