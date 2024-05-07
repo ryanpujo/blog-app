@@ -19,7 +19,7 @@ var storyPayload = models.StoryPayload{
 	Slug:      "my-blog-post",
 	AuthorID:  1,
 	Excerpt:   &excerpt,
-	Type:      2,
+	Type:      models.Novelette,
 	WordCount: 200,
 }
 var id = uint(1)

@@ -227,5 +227,23 @@ INSERT INTO public.users (first_name, last_name, username, password, email) VALU
 -- INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type) VALUES ('Seventh Blog Post', 'Content of the seventh blog post', 7, 'seventh-blog-post', 'This is the excerpt of the seventh blog post', 'published', 'novelette');
 -- INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type) VALUES ('Eighth Blog Post', 'Content of the eighth blog post', 8, 'eighth-blog-post', 'This is the excerpt of the eighth blog post', 'draft', 'novella');
 -- INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type) VALUES ('Ninth Blog Post', 'Content of the ninth blog post', 9, 'ninth-blog-post', 'This is the excerpt of the ninth blog post', 'archived', 'flash_fiction');
--- INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type) VALUES ('Tenth Blog Post', 'Content of the tenth blog post', 10, 'tenth-blog-post', 'This is the excerpt of the tenth blog post', 'published', 'short_story');
+INSERT INTO public.stories (title, content, author_id, slug, excerpt, status, type) VALUES (
+    'Tenth Blog Post', 
+    'In the heart of an ancient forest, shrouded in mist, stood the remnants of the old Willow’s Manor. Its walls whispered of untold secrets, and its windows, like blind eyes, stared into the abyss of the night. Sarah, a curious urban explorer, had heard the legends of the manor’s haunting and couldn’t resist the lure of the unknown.
+
+As she stepped through the creaking doorway, the air grew cold, and her breath turned to frost. The house seemed to breathe with a life of its own, the floorboards groaning under her weight. She wandered through the desolate halls, her flashlight casting eerie shadows that danced along the walls.
+
+In the depths of the house, she found an old library, its books scattered and covered in a thick layer of dust. A single volume lay open on a pedestal, its pages fluttering as though caught in a silent storm. Drawn by an inexplicable force, Sarah reached out to touch the book, and the moment her fingers brushed the ancient leather, the room spun wildly.
+
+The air crackled with energy, and from the shadows emerged the spectral figure of Lady Willow, her eyes hollow pits of despair. She wailed a mournful cry that echoed through the manor, and Sarah felt the chilling grip of fear. The ghostly apparition moved closer, and Sarah could hear the whispers of the past, tales of sorrow and betrayal that seeped into her soul.
+
+Paralyzed by terror, Sarah’s heart pounded as she realized the manor was a prison for those who dared to uncover its secrets. With every ounce of courage, she tore herself away from the ghost’s lament and fled through the winding corridors, the echoes of Lady Willow’s cries following her into the night.
+
+As she burst out into the safety of the forest, the manor behind her fell silent once more, waiting for the next unwary traveler to awaken its dormant horrors.', 
+    10, 
+    'tenth-blog-post', 
+    'This is the excerpt of the tenth blog post', 
+    'published', 
+    'flash_fiction'
+);
 

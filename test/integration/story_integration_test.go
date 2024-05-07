@@ -22,6 +22,13 @@ var storyPayload = models.StoryPayload{
 	Type:    models.Novelette,
 }
 
+var uniquenessViolatonPayload = models.StoryPayload{
+	Title:   "test title",
+	Slug:    "tenth-blog-post",
+	Excerpt: &excerpt,
+	Type:    models.FlashFiction,
+}
+
 var storyContentFailedPayload = models.StoryPayload{
 	Title:   "test title",
 	Slug:    "test-title",
@@ -39,6 +46,8 @@ var storyBadPayload = models.StoryPayload{
 func Test_Create_Story(t *testing.T) {
 	storyPayload.Content = loremGenerator.Generate(8000)
 	payload, _ := json.Marshal(storyPayload)
+	uniquenessViolatonPayload.Content = loremGenerator.Generate(200)
+	uniquenessViolation, _ := json.Marshal(uniquenessViolatonPayload)
 	badStoryPayload, _ := json.Marshal(storyBadPayload)
 	storyContentFailedPayload.Content = loremGenerator.Generate(1000)
 	contentFailedPayload, _ := json.Marshal(storyContentFailedPayload)
@@ -58,12 +67,12 @@ func Test_Create_Story(t *testing.T) {
 				require.Equal(t, http.StatusCreated, statusCode)
 				require.NotNil(t, json)
 				require.True(t, json.Success)
-				require.Equal(t, float64(1), json.Data.(map[string]any)["id"])
+				require.Equal(t, float64(2), json.Data.(map[string]any)["id"])
 			},
 		},
 		"uniqueness violated": {
 			uri:  "/create/2",
-			json: payload,
+			json: uniquenessViolation,
 			assert: func(t *testing.T, statusCode int, json *response.Response) {
 				require.Equal(t, http.StatusBadRequest, statusCode)
 				require.False(t, json.Success)
@@ -115,7 +124,7 @@ func Test_Find_Story(t *testing.T) {
 		assert func(t *testing.T, statusCode int, json *response.Response)
 	}{
 		"success": {
-			uri: "/1",
+			uri: "/2",
 			assert: func(t *testing.T, statusCode int, json *response.Response) {
 				require.Equal(t, http.StatusOK, statusCode)
 				require.NotNil(t, json.Data)
@@ -123,7 +132,7 @@ func Test_Find_Story(t *testing.T) {
 			},
 		},
 		"not found": {
-			uri: "/2",
+			uri: "/20",
 			assert: func(t *testing.T, statusCode int, json *response.Response) {
 				require.Equal(t, http.StatusNotFound, statusCode)
 				require.Nil(t, json.Data)
@@ -159,7 +168,7 @@ func Test_Find_Stories(t *testing.T) {
 			assert: func(t *testing.T, statusCode int, res *response.Response) {
 				require.Equal(t, http.StatusOK, statusCode)
 				require.NotNil(t, res.Data)
-				require.Equal(t, 1, len(res.Data.(map[string]any)["stories"].([]any)))
+				require.Equal(t, 2, len(res.Data.(map[string]any)["stories"].([]any)))
 			},
 		},
 	}
@@ -185,7 +194,7 @@ func Test_Update_Story(t *testing.T) {
 		assert func(t *testing.T, statusCode int, res *response.Response)
 	}{
 		"success": {
-			uri:  "/1/user/1",
+			uri:  "/2/user/1",
 			json: payload,
 			assert: func(t *testing.T, statusCode int, res *response.Response) {
 				require.Equal(t, http.StatusOK, statusCode)
@@ -193,7 +202,7 @@ func Test_Update_Story(t *testing.T) {
 			},
 		},
 		"word count failed": {
-			uri:  "/1/user/1",
+			uri:  "/2/user/1",
 			json: contentFailedPayload,
 			assert: func(t *testing.T, statusCode int, res *response.Response) {
 				require.Equal(t, http.StatusBadRequest, statusCode)
@@ -253,7 +262,7 @@ func Test_Delete_Story(t *testing.T) {
 			},
 		},
 		"data not found": {
-			uri: "/2",
+			uri: "/20",
 			assert: func(t *testing.T, statusCode int, res *response.Response) {
 				require.Equal(t, http.StatusNotFound, statusCode)
 				require.NotNil(t, res)

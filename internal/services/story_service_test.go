@@ -47,7 +47,7 @@ func Test_blogService_Create(t *testing.T) {
 		assert  func(t *testing.T, actualID *uint, err error)
 	}{
 		"success": {
-			payload: models.StoryPayload{Type: 1, Content: loremGenerator.Generate(3000)},
+			payload: models.StoryPayload{Type: models.ShortStory, Content: loremGenerator.Generate(3000)},
 			arrange: func() {
 				mockBlogRepo.On("Create", mock.Anything).Return(&id, nil).Once()
 			},
@@ -57,7 +57,7 @@ func Test_blogService_Create(t *testing.T) {
 			},
 		},
 		"failed": {
-			payload: models.StoryPayload{Type: 1, Content: loremGenerator.Generate(3000)},
+			payload: models.StoryPayload{Type: models.ShortStory, Content: loremGenerator.Generate(3000)},
 			arrange: func() {
 				mockBlogRepo.On("Create", mock.Anything).Return((*uint)(nil), errors.New("failed")).Once()
 			},
@@ -68,7 +68,7 @@ func Test_blogService_Create(t *testing.T) {
 			},
 		},
 		"word count failed": {
-			payload: models.StoryPayload{Type: 3, Content: loremGenerator.Generate(1000)},
+			payload: models.StoryPayload{Type: models.Novella, Content: loremGenerator.Generate(1000)},
 			arrange: func() {},
 			assert: func(t *testing.T, actualID *uint, err error) {
 				require.Error(t, err)
@@ -203,7 +203,7 @@ func Test_blogService_Update(t *testing.T) {
 		assert  func(t *testing.T, err error)
 	}{
 		"success": {
-			payload: models.StoryPayload{Type: 1, Content: loremGenerator.Generate(3000)},
+			payload: models.StoryPayload{Type: models.ShortStory, Content: loremGenerator.Generate(3000)},
 			arrange: func() {
 				mockBlogRepo.On("Update", mock.Anything, mock.Anything).Return(nil).Once()
 			},
@@ -212,7 +212,7 @@ func Test_blogService_Update(t *testing.T) {
 			},
 		},
 		"failed": {
-			payload: models.StoryPayload{Type: 1, Content: loremGenerator.Generate(3000)},
+			payload: models.StoryPayload{Type: models.ShortStory, Content: loremGenerator.Generate(3000)},
 			arrange: func() {
 				mockBlogRepo.On("Update", mock.Anything, mock.Anything).Return(errors.New("failed")).Once()
 			},
@@ -222,7 +222,7 @@ func Test_blogService_Update(t *testing.T) {
 			},
 		},
 		"word count failed": {
-			payload: models.StoryPayload{Type: 1, Content: loremGenerator.Generate(500)},
+			payload: models.StoryPayload{Type: models.ShortStory, Content: loremGenerator.Generate(500)},
 			arrange: func() {},
 			assert: func(t *testing.T, err error) {
 				require.Error(t, err)
