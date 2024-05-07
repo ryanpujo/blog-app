@@ -8,6 +8,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/ryanpujo/blog-app/token"
+	"github.com/ryanpujo/blog-app/utils"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -21,7 +22,10 @@ func (m *RepoMock) SaveToken(ctx context.Context, t token.Token) error {
 	return arg.Error(0)
 }
 
-var HMAC = token.HMACMethod
+var (
+	HMAC     = token.HMACMethod
+	hashPass = utils.HashPassword
+)
 
 func Test_Generate_RefreshToken(t *testing.T) {
 	testTable := map[string]struct {
@@ -68,13 +72,28 @@ func Test_Generate_RefreshToken(t *testing.T) {
 			tearDown: func() {
 			},
 		},
+		"fail bcrypt": {
+			arrange: func() {
+				utils.HashPassword = func(plain string) (string, error) {
+					return "", errors.New("failed")
+				}
+			},
+			assert: func(t *testing.T, actual *string, err error) {
+				require.Error(t, err)
+				require.Nil(t, actual)
+				require.Equal(t, "failed to hash token: failed", err.Error())
+			},
+			tearDown: func() {
+				utils.HashPassword = hashPass
+			},
+		},
 	}
 
 	for name, tc := range testTable {
 		t.Run(name, func(t *testing.T) {
 			tc.arrange()
 
-			token, err := refreshTokenGenerator.GenerateToken(1)
+			token, err := refreshTokenGenerator.GenerateToken(2)
 
 			tc.assert(t, token, err)
 

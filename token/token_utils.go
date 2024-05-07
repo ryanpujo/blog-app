@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/ryanpujo/blog-app/utils"
 )
 
 // Token represents a token.
@@ -72,12 +73,17 @@ func (r tokenGenerator) GenerateToken(userID uint) (*string, error) {
 		return nil, fmt.Errorf("failed to sign token: %w", err)
 	}
 
+	preHashed := sha256.Sum256([]byte(tokenString))
+
 	// Hash the JWT string
-	hash := sha256.Sum256([]byte(tokenString))
+	hash, err := utils.HashPassword(string(preHashed[:]))
+	if err != nil {
+		return nil, fmt.Errorf("failed to hash token: %w", err)
+	}
 
 	// Create a new Token struct
 	token := Token{
-		TokenHash: string(hash[:]),
+		TokenHash: hash,
 		UserID:    userID,
 		ExpiresAt: r.expiresAt,
 	}

@@ -8,17 +8,10 @@ import (
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/ryanpujo/blog-app/config"
 	"github.com/ryanpujo/blog-app/token"
 )
 
 var (
-	refreshToken = token.Token{
-		TokenHash: "slkfekfne",
-		UserID:    1,
-		ExpiresAt: time.Now().Add(config.RefreshTokenExpiration),
-	}
-
 	testDB                *sql.DB
 	SQLMock               sqlmock.Sqlmock
 	repoMock              = new(RepoMock)
