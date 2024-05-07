@@ -1,4 +1,4 @@
-package auth_test
+package token_test
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/ryanpujo/blog-app/auth"
+	"github.com/ryanpujo/blog-app/token"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -16,12 +16,12 @@ type RepoMock struct {
 	mock.Mock
 }
 
-func (m *RepoMock) SaveToken(ctx context.Context, t auth.Token) error {
+func (m *RepoMock) SaveToken(ctx context.Context, t token.Token) error {
 	arg := m.Called(ctx, t)
 	return arg.Error(0)
 }
 
-var HMAC = auth.HMACMethod
+var HMAC = token.HMACMethod
 
 func Test_Generate_RefreshToken(t *testing.T) {
 	testTable := map[string]struct {
@@ -42,7 +42,7 @@ func Test_Generate_RefreshToken(t *testing.T) {
 		},
 		"fail sign": {
 			arrange: func() {
-				auth.HMACMethod = &jwt.SigningMethodHMAC{
+				token.HMACMethod = &jwt.SigningMethodHMAC{
 					Name: "claims",
 					Hash: crypto.BLAKE2b_384,
 				}
@@ -53,7 +53,7 @@ func Test_Generate_RefreshToken(t *testing.T) {
 				require.Equal(t, "failed to sign token: the requested hash function is unavailable", err.Error())
 			},
 			tearDown: func() {
-				auth.HMACMethod = HMAC
+				token.HMACMethod = HMAC
 			},
 		},
 		"failed to save": {
